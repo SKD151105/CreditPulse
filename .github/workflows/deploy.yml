@@ -58,4 +58,4 @@ jobs:
             
             # 3. Pull the new image and restart the containers
             docker pull ghcr.io/skd151105/creditpulse-server:latest
-            docker-compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml up -d
