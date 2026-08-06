@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build: ./server
+    ports:
+      - "5000:5000"
+    env_file: ./server/.env
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/creditpulse
+      - REDIS_URI=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+
+  worker:
+    build: ./server
+    command: node dist/worker.js
+    env_file: ./server/.env
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/creditpulse
+      - REDIS_URI=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+
+volumes:
+  mongo_data:
