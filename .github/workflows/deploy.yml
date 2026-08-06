@@ -21,7 +21,7 @@ jobs:
         with:
           context: ./server
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/creditpulse-server:latest
+          tags: ghcr.io/skd151105/creditpulse-server:latest
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -41,18 +41,18 @@ jobs:
             version: '3.8'
             services:
               api:
-                image: ghcr.io/${{ github.repository_owner }}/creditpulse-server:latest
+                image: ghcr.io/skd151105/creditpulse-server:latest
                 ports:
                   - "5000:5000"
                 env_file: .env.prod
                 restart: always
               worker:
-                image: ghcr.io/${{ github.repository_owner }}/creditpulse-server:latest
+                image: ghcr.io/skd151105/creditpulse-server:latest
                 command: node dist/worker.js
                 env_file: .env.prod
                 restart: always
             EOF
             
             # 3. Pull the new image and restart the containers
-            docker pull ghcr.io/${{ github.repository_owner }}/creditpulse-server:latest
+            docker pull ghcr.io/skd151105/creditpulse-server:latest
             docker-compose -f docker-compose.prod.yml up -d
