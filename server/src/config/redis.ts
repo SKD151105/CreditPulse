@@ -3,10 +3,9 @@ import { env } from './env';
 
 const redisOptions: Record<string, any> = {
   maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-  enableOfflineQueue: false, // DO NOT queue commands forever if Redis fails to connect
   family: 4, // Force IPv4 to prevent resolution hangs
-  tls: { rejectUnauthorized: false } // Required for Upstash in some environments
+  tls: { rejectUnauthorized: false }, // Required for Upstash in some environments
+  keepAlive: 10000, // Important for Upstash to prevent idle disconnects
 };
 
 const redis = new Redis(env.REDIS_URI, redisOptions);
@@ -24,7 +23,8 @@ redis.on('error', (err) => {
 export const redisConnection = new Redis(env.REDIS_URI, {
   maxRetriesPerRequest: null,
   family: 4,
-  tls: { rejectUnauthorized: false }
+  tls: { rejectUnauthorized: false },
+  keepAlive: 10000
 });
 
 export default redis;
