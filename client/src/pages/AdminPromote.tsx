@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axiosInstance from '../api/axios';
+import axios from 'axios';
 import { ShieldAlert, ShieldCheck } from 'lucide-react';
 
 export const AdminPromote = () => {
