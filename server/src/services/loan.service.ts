@@ -142,10 +142,6 @@ export class LoanService {
       throw new NotFoundError('Loan application not found');
     }
 
-    if (loan.status !== 'draft') {
-      throw new BadRequestError('Only drafts can be deleted');
-    }
-
     await loan.deleteOne();
 
     await Promise.all([

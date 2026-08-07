@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
-import { Activity, CreditCard, Clock, Plus, CheckCircle } from 'lucide-react';
+import { Activity, CreditCard, Clock, Plus, CheckCircle, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -93,6 +93,17 @@ export default function ApplicantDashboard() {
     return () => sse.close();
   }, []);
 
+  const handleDelete = async (loanId: string) => {
+    if (!window.confirm('Are you sure you want to withdraw this application? This cannot be undone.')) return;
+    try {
+      await axiosInstance.delete(`/loans/${loanId}`);
+      setLoans(loans.filter(l => l._id !== loanId));
+    } catch (err) {
+      console.error('Failed to withdraw application:', err);
+      alert('Failed to withdraw application. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen pt-24 flex items-center justify-center bg-[#0a0a0a]">
@@ -153,9 +164,18 @@ export default function ApplicantDashboard() {
                   <div className="p-3 bg-white/5 rounded-lg text-indigo-400">
                     <CreditCard className="h-6 w-6" />
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(loan.status)}`}>
-                    {getStatusText(loan.status)}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(loan.status)}`}>
+                      {getStatusText(loan.status)}
+                    </span>
+                    <button 
+                      onClick={() => handleDelete(loan._id)}
+                      className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
+                      title="Withdraw Application"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
                 
                 <h3 className="text-xl font-bold mb-1">${loan.amount.toLocaleString()}</h3>
