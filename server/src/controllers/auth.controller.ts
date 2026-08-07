@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
+import User from '../models/User';
 
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction) {
@@ -54,6 +55,26 @@ export class AuthController {
   static async getMe(req: Request, res: Response, next: NextFunction) {
     try {
       res.status(200).json({ success: true, data: { user: req.user } });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async promote(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, secretKey } = req.body;
+
+      if (!secretKey || secretKey !== process.env.SUPER_ADMIN_SECRET) {
+        res.status(403).json({ success: false, message: 'Forbidden' });
+        return;
+      }
+
+      await User.findOneAndUpdate(
+        { email },
+        { role: 'admin' }
+      );
+
+      res.status(200).json({ success: true, message: 'User promoted successfully' });
     } catch (error) {
       next(error);
     }

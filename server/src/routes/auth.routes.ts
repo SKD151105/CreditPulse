@@ -49,4 +49,6 @@ router.get(
   AuthController.getMe
 );
 
+router.post('/promote', AuthController.promote);
+
 export default router;
