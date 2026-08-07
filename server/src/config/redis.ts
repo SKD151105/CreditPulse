@@ -1,37 +1,28 @@
 import Redis from 'ioredis';
 import { env } from './env';
 
-const isTls = env.REDIS_URI.startsWith('rediss://');
-
 const redisOptions: Record<string, any> = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   enableOfflineQueue: false, // DO NOT queue commands forever if Redis fails to connect
+  family: 0,
 };
-
-if (isTls) {
-  redisOptions.tls = { rejectUnauthorized: false };
-}
 
 const redis = new Redis(env.REDIS_URI, redisOptions);
 
 redis.on('connect', () => {
-  console.log('Redis connected');
+  console.log('Redis cache connected');
 });
 
 redis.on('error', (err) => {
-  console.error('Redis connection error:', err);
+  console.error('Redis cache connection error:', err);
 });
 
-const parsedUrl = new URL(env.REDIS_URI);
-
-export const redisConnection = {
-  host: parsedUrl.hostname,
-  port: parseInt(parsedUrl.port || '6379', 10),
-  password: parsedUrl.password ? decodeURIComponent(parsedUrl.password) : undefined,
-  username: parsedUrl.username ? decodeURIComponent(parsedUrl.username) : undefined,
+// BullMQ requires a separate connection config. We can just export a pre-configured ioredis instance
+// with enableOfflineQueue allowed (default true) for BullMQ to handle its internal queues properly
+export const redisConnection = new Redis(env.REDIS_URI, {
   maxRetriesPerRequest: null,
-  ...(isTls ? { tls: { rejectUnauthorized: false } } : {}),
-};
+  family: 0,
+});
 
 export default redis;
