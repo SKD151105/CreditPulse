@@ -43,35 +43,20 @@ jobs:
             cat << 'EOF' > docker-compose.prod.yml
             version: '3.8'
             services:
-              redis:
-                image: redis:7-alpine
-                restart: always
-                ports:
-                  - "6379:6379"
-
               api:
                 image: ghcr.io/skd151105/creditpulse-server:latest
                 ports:
                   - "5000:5000"
                 env_file: .env.prod
-                environment:
-                  - REDIS_URI=redis://redis:6379
                 restart: always
-                depends_on:
-                  - redis
                 dns:
                   - 8.8.8.8
                   - 8.8.4.4
-
               worker:
                 image: ghcr.io/skd151105/creditpulse-server:latest
                 command: node dist/worker.js
                 env_file: .env.prod
-                environment:
-                  - REDIS_URI=redis://redis:6379
                 restart: always
-                depends_on:
-                  - redis
                 dns:
                   - 8.8.8.8
                   - 8.8.4.4

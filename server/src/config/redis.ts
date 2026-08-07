@@ -11,7 +11,7 @@ const redisOptions: Record<string, any> = {
 };
 
 if (isTls) {
-  redisOptions.tls = {};
+  redisOptions.tls = { rejectUnauthorized: false };
 }
 
 const redis = new Redis(env.REDIS_URI, redisOptions);
