@@ -11,7 +11,7 @@ const redisOptions: Record<string, any> = {
 const redis = new Redis(env.REDIS_URI, redisOptions);
 
 redis.on('connect', () => {
-  console.log('Redis cache connected');
+  // Silent reconnects to prevent log spam from Upstash culling idle connections
 });
 
 redis.on('error', (err) => {
