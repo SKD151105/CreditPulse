@@ -15,6 +15,7 @@ import { apiLimiter } from './middleware/rateLimiter';
 
 const app = express();
 
+app.set('trust proxy', 1); // Trust the Vercel proxy
 app.use(helmet());
 app.use(
   cors({
