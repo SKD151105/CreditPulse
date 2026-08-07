@@ -4,10 +4,14 @@ import User from '../models/User';
 
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction) {
+    console.log('--- Register Controller Started ---');
     try {
+      console.log('Calling AuthService.register...');
       const result = await AuthService.register(req.body);
+      console.log('AuthService.register completed successfully.');
       res.status(201).json({ success: true, data: result });
     } catch (error) {
+      console.error('Error in register controller:', error);
       next(error);
     }
   }
@@ -22,10 +26,14 @@ export class AuthController {
   }
 
   static async googleLogin(req: Request, res: Response, next: NextFunction) {
+    console.log('--- Google Login Controller Started ---');
     try {
+      console.log('Calling AuthService.googleLogin...');
       const result = await AuthService.googleLogin(req.body);
+      console.log('AuthService.googleLogin completed successfully.');
       res.status(200).json({ success: true, data: result });
     } catch (error) {
+      console.error('Error in googleLogin controller:', error);
       next(error);
     }
   }
