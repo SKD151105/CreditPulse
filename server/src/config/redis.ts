@@ -6,6 +6,7 @@ const isTls = env.REDIS_URI.startsWith('rediss://');
 const redisOptions: Record<string, any> = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
+  enableOfflineQueue: false, // DO NOT queue commands forever if Redis fails to connect
   family: 4, // Force IPv4 to prevent EC2 Node 18 IPv6 hang
 };
 
