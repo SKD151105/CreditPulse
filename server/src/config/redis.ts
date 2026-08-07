@@ -6,7 +6,6 @@ const redisOptions: Record<string, any> = {
   enableReadyCheck: false, // Critical for Upstash: bypass INFO command check that hangs the connection
   family: 4, // Force IPv4 to prevent resolution hangs
   keepAlive: 10000, // Important for Upstash to prevent idle disconnects
-  tls: { rejectUnauthorized: false }
 };
 
 const redis = new Redis(env.REDIS_URI, redisOptions);
@@ -25,8 +24,7 @@ export const redisConnection = new Redis(env.REDIS_URI, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false, // Critical for Upstash
   family: 4,
-  keepAlive: 10000,
-  tls: { rejectUnauthorized: false }
+  keepAlive: 10000
 });
 
 export default redis;
