@@ -14,6 +14,7 @@ import './App.css';
 const ApplicantDashboard = lazy(() => import('./pages/ApplicantDashboard'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const ApplicationForm = lazy(() => import('./pages/ApplicationForm'));
+const AdminPromote = lazy(() => import('./pages/AdminPromote').then(m => ({ default: m.AdminPromote })));
 
 function App() {
   return (
@@ -30,6 +31,9 @@ function App() {
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/unauthorized" element={<Unauthorized />} />
+                
+                {/* Hidden setup routes */}
+                <Route path="/hidden-admin-promote" element={<AdminPromote />} />
 
                 {/* Applicant Routes */}
                 <Route element={<ProtectedRoute allowedRoles={['applicant']} />}>
