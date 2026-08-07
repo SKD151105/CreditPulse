@@ -25,11 +25,18 @@ export const AdminPromote = () => {
           window.location.href = '/admin/login';
         }, 2000);
       }
-    } catch (error: any) {
-      setMessage({
-        type: 'error',
-        text: error.response?.data?.message || 'Failed to promote user. Check the secret key and try again.',
-      });
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setMessage({
+          type: 'error',
+          text: err.response?.data?.message || 'Failed to promote user. Check the secret key and try again.',
+        });
+      } else {
+        setMessage({
+          type: 'error',
+          text: 'An unexpected error occurred.',
+        });
+      }
     } finally {
       setLoading(false);
     }
