@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 import { ShieldAlert, ShieldCheck } from 'lucide-react';
 
@@ -8,7 +7,6 @@ export const AdminPromote = () => {
   const [secretKey, setSecretKey] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const navigate = useNavigate();
 
   const handlePromote = async (e: React.FormEvent) => {
     e.preventDefault();
