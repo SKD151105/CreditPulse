@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 import { motion } from 'framer-motion';
-import { Briefcase, CreditCard, User, AlertCircle, Loader2, Upload, FileText } from 'lucide-react';
+import { Briefcase, CreditCard, User, AlertCircle, Loader2, Upload, FileText, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 
 const applicationSchema = z.object({
@@ -39,6 +39,12 @@ export default function ApplicationForm() {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBack = () => {
+    if (window.confirm("Are you sure you want to discard your application? All unsaved progress will be lost.")) {
+      navigate('/dashboard');
+    }
+  };
 
   const {
     register,
@@ -173,6 +179,14 @@ export default function ApplicationForm() {
         className="max-w-4xl mx-auto glass border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl"
       >
         <div className="bg-white/5 p-8 border-b border-white/10">
+          <button 
+            type="button"
+            onClick={handleBack}
+            className="mb-6 text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Dashboard</span>
+          </button>
           <h1 className="text-3xl font-bold mb-2">Apply for a Loan</h1>
           <p className="text-gray-400">Complete this application to receive an instant credit decision.</p>
         </div>
