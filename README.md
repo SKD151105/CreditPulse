@@ -50,7 +50,7 @@ The deployment pipeline is fully automated via GitHub Actions. On every merge to
 - **Role-Based Access Control (RBAC):** Distinct permission boundaries and user interfaces for Applicants and Admins (Underwriters).
 - **Secure Authentication:** Combines JWT-based authentication (short-lived access tokens, HTTP-only refresh tokens) with secure Google OAuth 2.0 implementation.
 - **Event-Driven Real-Time Notifications:** Admin status changes trigger background jobs that instantly push live updates to the applicant's browser via Server-Sent Events (SSE).
-- **Automated AI Risk Analysis:** Implements a backend scoring algorithm that evaluates income-to-loan ratios, employment stability, and document completeness to generate an instant risk profile.
+- **Automated Risk Scoring Engine:** Implements a backend scoring algorithm that mathematically evaluates income-to-loan ratios, employment stability, and document completeness to generate an instant risk profile.
 - **Containerized Microservices:** Clean separation of concerns between the API gateway, background BullMQ workers, and caching layer using Docker Compose.
 
 ---

@@ -324,7 +324,7 @@ export default function AdminDashboard() {
 
               {selectedLoan.scoringBreakdown && (
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-2">AI Risk Analysis</h3>
+                  <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-2">Risk Scoring Breakdown</h3>
                   
                   <div className="flex items-center justify-between mb-6 bg-white/5 p-4 rounded-xl">
                     <span className="text-gray-300 font-medium">Final Credit Score</span>
