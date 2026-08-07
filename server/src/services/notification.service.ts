@@ -10,10 +10,11 @@ export class NotificationService {
   private static subscriber = redisClient.duplicate();
 
   static async initPubSub() {
-    await this.subscriber.subscribe('notifications');
-    logger.info('API Server subscribed to Redis notifications channel');
+    try {
+      await this.subscriber.subscribe('notifications');
+      logger.info('API Server subscribed to Redis notifications channel');
 
-    this.subscriber.on('message', (channel, message) => {
+      this.subscriber.on('message', (channel, message) => {
       if (channel === 'notifications') {
         const payload = JSON.parse(message);
         const { userId, notification } = payload;
@@ -26,8 +27,11 @@ export class NotificationService {
             res.write(`data: ${JSON.stringify(notification)}\n\n`);
           });
         }
-      }
-    });
+        }
+      });
+    } catch (err: any) {
+      logger.error('Failed to initialize Redis PubSub', { error: err.message });
+    }
   }
 
   static addClient(userId: string, res: Response) {
@@ -70,4 +74,6 @@ export class NotificationService {
 }
 
 // Initialize immediately
-NotificationService.initPubSub();
+NotificationService.initPubSub().catch(err => {
+  logger.error('Unhandled error in NotificationService.initPubSub', { error: err.message });
+});
