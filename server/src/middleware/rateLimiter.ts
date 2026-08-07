@@ -10,5 +10,6 @@ export const apiLimiter = rateLimit({
   store: new RedisStore({
     sendCommand: (...args: string[]) => redisClient.call(args[0], ...args.slice(1)) as any,
   }),
+  passOnStoreError: true, // If Redis goes down, allow requests through instead of throwing 500 errors
   message: { success: false, message: 'Too many requests, please try again later.' }
 });
