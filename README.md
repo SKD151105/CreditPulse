@@ -5,11 +5,9 @@
   [![Live Demo](https://img.shields.io/badge/Demo-Live-brightgreen.svg)](https://credit-pulse-xi.vercel.app/)
   [![Node.js](https://img.shields.io/badge/Node.js-Backend-43853D.svg?logo=node.js&logoColor=white)](#)
   [![React](https://img.shields.io/badge/React-Frontend-61DAFB.svg?logo=react&logoColor=black)](#)
-  [![Docker](https://img.shields.io/badge/Docker-Containers-2496ED.svg?logo=docker&logoColor=white)](#)
   [![AWS](https://img.shields.io/badge/AWS-Cloud-232F3E.svg?logo=amazon-aws&logoColor=white)](#)
   [![Redis](https://img.shields.io/badge/Redis-Cache-DC382D.svg?logo=redis&logoColor=white)](#)
   [![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248.svg?logo=mongodb&logoColor=white)](#)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 </div>
 
 ---
