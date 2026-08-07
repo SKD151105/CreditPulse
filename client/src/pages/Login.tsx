@@ -19,6 +19,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export const Login = () => {
   const [error, setError] = useState('');
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
@@ -54,6 +55,7 @@ export const Login = () => {
 
   const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
     setError('');
+    setIsGoogleLoading(true);
     try {
       const response = await axiosInstance.post('/auth/google', {
         credential: credentialResponse.credential,
@@ -68,6 +70,8 @@ export const Login = () => {
       } else {
         setError('An unexpected error occurred during Google login');
       }
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -142,14 +146,21 @@ export const Login = () => {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-center opacity-90 hover:opacity-100 transition-opacity drop-shadow-md">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => setError('Google Sign-In failed')}
-            theme="filled_black"
-            shape="pill"
-            width="320px"
-          />
+        <div className="mt-6 flex justify-center opacity-90 hover:opacity-100 transition-opacity drop-shadow-md min-h-[40px]">
+          {isGoogleLoading ? (
+            <div className="flex items-center justify-center">
+              <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="ml-3 text-indigo-400 font-medium text-sm">Authenticating...</span>
+            </div>
+          ) : (
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Google Sign-In failed')}
+              theme="filled_black"
+              shape="pill"
+              width="320px"
+            />
+          )}
         </div>
 
         <p className="mt-6 text-center text-gray-400 text-sm">

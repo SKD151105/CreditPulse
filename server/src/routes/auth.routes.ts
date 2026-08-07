@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
 import { validate } from '../middleware/validate.middleware';
-import { registerSchema, loginSchema, googleAuthSchema, refreshTokenSchema } from '../validators/auth.schema';
+import { registerSchema, loginSchema, googleAuthSchema, refreshTokenSchema, promoteSchema } from '../validators/auth.schema';
 import { rateLimiter } from '../middleware/rateLimiter.middleware';
 import { authenticate } from '../middleware/auth.middleware';
 import { RATE_LIMITS } from '../utils/constants';
@@ -49,6 +49,11 @@ router.get(
   AuthController.getMe
 );
 
-router.post('/promote', AuthController.promote);
+router.post(
+  '/promote',
+  rateLimiter(5, 60),
+  validate(promoteSchema),
+  AuthController.promote
+);
 
 export default router;

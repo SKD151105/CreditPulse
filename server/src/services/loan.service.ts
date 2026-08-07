@@ -89,8 +89,10 @@ export class LoanService {
     Object.assign(loan, data);
     await loan.save();
 
-    await CacheService.del(`loan:${loanId}`);
-    await CacheService.deleteByPattern(`loans:user:${userId}:*`);
+    await Promise.all([
+      CacheService.del(`loan:${loanId}`),
+      CacheService.deleteByPattern(`loans:user:${userId}:*`)
+    ]);
 
     return loan;
   }
@@ -125,8 +127,10 @@ export class LoanService {
 
     await scoringQueue.add('score-loan', { loanId });
 
-    await CacheService.del(`loan:${loanId}`);
-    await CacheService.deleteByPattern(`loans:user:${userId}:*`);
+    await Promise.all([
+      CacheService.del(`loan:${loanId}`),
+      CacheService.deleteByPattern(`loans:user:${userId}:*`)
+    ]);
 
     return loan;
   }
@@ -144,7 +148,9 @@ export class LoanService {
 
     await loan.deleteOne();
 
-    await CacheService.del(`loan:${loanId}`);
-    await CacheService.deleteByPattern(`loans:user:${userId}:*`);
+    await Promise.all([
+      CacheService.del(`loan:${loanId}`),
+      CacheService.deleteByPattern(`loans:user:${userId}:*`)
+    ]);
   }
 }

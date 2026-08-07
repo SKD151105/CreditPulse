@@ -43,10 +43,14 @@ export class AuthService {
     return { user: userResponse, accessToken, refreshToken };
   }
 
-  static async login({ email, password }: any) {
+  static async login({ email, password, adminOnly }: any) {
     const user = await User.findOne({ email }).select('+password');
     if (!user || !user.password) {
       throw new UnauthorizedError('Invalid credentials');
+    }
+
+    if (adminOnly && user.role !== 'admin') {
+      throw new UnauthorizedError('Access Denied: Admins only');
     }
 
     const isMatch = await comparePassword(password, user.password);
@@ -68,7 +72,7 @@ export class AuthService {
     return { user: userResponse, accessToken, refreshToken };
   }
 
-  static async googleLogin({ credential }: any) {
+  static async googleLogin({ credential, adminOnly }: any) {
     const ticket = await client.verifyIdToken({
       idToken: credential,
       audience: env.GOOGLE_CLIENT_ID,
@@ -81,17 +85,26 @@ export class AuthService {
     const { email, name, sub: googleId } = payload;
     let user = await User.findOne({ email });
 
-    if (user) {
+    if (adminOnly) {
+      if (!user || user.role !== 'admin') {
+        throw new UnauthorizedError('Access Denied: Admins only');
+      }
       if (!user.googleId) {
         user.googleId = googleId;
       }
     } else {
-      user = await User.create({
-        email,
-        name,
-        googleId,
-        role: 'applicant',
-      });
+      if (user) {
+        if (!user.googleId) {
+          user.googleId = googleId;
+        }
+      } else {
+        user = await User.create({
+          email,
+          name,
+          googleId,
+          role: 'applicant',
+        });
+      }
     }
 
     const accessToken = generateAccessToken({ _id: user._id, email: user.email, role: user.role, name: user.name });

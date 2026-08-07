@@ -39,7 +39,7 @@ export const Landing = () => {
       />
 
       {/* Hero Section */}
-      <section className="flex-1 flex flex-col items-center justify-center relative z-10 px-4 text-center mt-20 mb-20">
+      <section className="flex-1 flex flex-col items-center justify-center relative z-10 px-4 text-center mt-[7.5rem] mb-20">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

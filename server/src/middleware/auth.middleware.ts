@@ -8,12 +8,18 @@ export const authenticate = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    let token: string | undefined;
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedError('No token provided');
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else if (req.query.token) {
+      token = req.query.token as string;
     }
 
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+      throw new UnauthorizedError('No token provided');
+    }
     const decoded = verifyAccessToken(token) as {
       _id: string;
       email: string;

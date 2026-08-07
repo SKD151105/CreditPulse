@@ -71,15 +71,26 @@ export default function ApplicantDashboard() {
   }, []);
 
   useEffect(() => {
-    // TODO: We will need a custom SSE polyfill or pass token in URL for SSE to work with Bearer tokens.
-    // Native EventSource does NOT support custom headers like Authorization.
-    /*
-    const sse = new EventSource('http://localhost:5000/api/notifications/stream');
-    sse.onmessage = (event) => {
-      console.log('Notification:', event.data);
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    const apiUrl = import.meta.env.VITE_API_URL || '/api';
+    const sse = new EventSource(`${apiUrl}/notifications/stream?token=${token}`);
+    
+    sse.onmessage = async (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type !== 'system') {
+          // Refetch loans to update UI immediately
+          const response = await axiosInstance.get('/loans');
+          setLoans(response.data.data.loans);
+        }
+      } catch (err) {
+        // Handle parsing errors or ignore raw text
+      }
     };
+    
     return () => sse.close();
-    */
   }, []);
 
   if (loading) {

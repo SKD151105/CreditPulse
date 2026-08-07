@@ -18,7 +18,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
   }
 
   if (!token) {
-    return <Navigate to="/login" replace />;
+    const loginRoute = allowedRoles?.includes('admin') ? '/admin/login' : '/login';
+    return <Navigate to={loginRoute} replace />;
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
