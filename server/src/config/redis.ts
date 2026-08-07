@@ -7,7 +7,6 @@ const redisOptions: Record<string, any> = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   family: 4, // Force IPv4 to prevent EC2 Node 18 IPv6 hang
-  commandTimeout: 5000, // Prevent infinite hanging if Redis is unresponsive
 };
 
 if (isTls) {
