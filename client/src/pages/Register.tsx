@@ -71,8 +71,9 @@ export const Register = () => {
       login(accessToken, userData);
       navigate(userData.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
+      console.error("Google Registration Error:", err);
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || 'Failed to register with Google');
+        setError(err.response?.data?.message || 'Failed to register with Google (Network/CORS error)');
       } else {
         setError('An unexpected error occurred during Google registration');
       }

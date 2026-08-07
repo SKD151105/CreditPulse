@@ -62,8 +62,9 @@ export const Login = () => {
       login(accessToken, userData);
       navigate(userData.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
+      console.error("Google Login Error:", err);
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || 'Failed to login with Google');
+        setError(err.response?.data?.message || 'Failed to login with Google (Network/CORS error)');
       } else {
         setError('An unexpected error occurred during Google login');
       }
