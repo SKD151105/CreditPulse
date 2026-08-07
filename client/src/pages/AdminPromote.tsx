@@ -18,8 +18,14 @@ export const AdminPromote = () => {
     try {
       const response = await axiosInstance.post('/auth/promote', { email, secretKey });
       if (response.data.success) {
-        setMessage({ type: 'success', text: 'User successfully promoted to Admin!' });
-        setTimeout(() => navigate('/admin/login'), 2000);
+        setMessage({ type: 'success', text: 'User successfully promoted to Admin! Redirecting to login...' });
+        setTimeout(() => {
+          // Clear current applicant session
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          // Force a full reload to clear any React state/context and go to admin login
+          window.location.href = '/admin/login';
+        }, 2000);
       }
     } catch (error: any) {
       setMessage({

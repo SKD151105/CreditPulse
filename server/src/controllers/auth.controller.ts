@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
 import User from '../models/User';
+import LoanApplication from '../models/LoanApplication';
 import { env } from '../config/env';
 
 export class AuthController {
@@ -78,12 +79,26 @@ export class AuthController {
         return;
       }
 
-      await User.findOneAndUpdate(
-        { email },
-        { role: 'admin' }
-      );
+      const userToPromote = await User.findOne({ email });
+      if (!userToPromote) {
+        res.status(404).json({ success: false, message: 'User not found' });
+        return;
+      }
 
-      res.status(200).json({ success: true, message: 'User promoted successfully' });
+      const activeApplication = await LoanApplication.findOne({
+        applicantId: userToPromote._id,
+        status: { $nin: ['rejected', 'disbursed', 'draft'] }
+      });
+
+      if (activeApplication) {
+        res.status(400).json({ success: false, message: 'Cannot promote a user with active loan applications' });
+        return;
+      }
+
+      userToPromote.role = 'admin';
+      await userToPromote.save();
+
+      res.status(200).json({ success: true, message: 'User promoted successfully. Please log in again.' });
     } catch (error) {
       next(error);
     }
