@@ -44,6 +44,12 @@ To prevent the Node.js backend from becoming a bottleneck during large file uplo
 ### 4. Zero-Downtime Automated Deployments
 The deployment pipeline is fully automated via GitHub Actions. On every merge to `main`, the CI pipeline builds an optimized, multi-stage Docker image, pushes it to the GitHub Container Registry (GHCR), and securely triggers the AWS EC2 host via SSH to pull the latest image. The deployment script leverages `docker compose up -d` to swap containers with zero downtime, dynamically injecting production secrets without storing them in the repository.
 
+### 5. Operational Resilience & Edge-Case Handling
+The platform is hardened against several deep-infrastructure edge cases commonly encountered in distributed deployments:
+- **Reverse Proxy IP Spoofing:** Configured Express trust-proxy settings to safely resolve actual client IPs behind Vercel's edge network, preventing rate-limiter bypasses.
+- **Node.js IPv6 DNS Resolution:** Mitigated Dockerized Node 18+ DNS hanging issues on AWS by explicitly forcing IPv4 resolution (`--dns-result-order=ipv4first`), ensuring stable connections to MongoDB Atlas.
+- **Unhandled Promise Rejection Loops:** Implemented strict error-boundary listeners on the `ioredis` client to prevent the Node.js event loop from crashing during transient network disconnects from the cache layer.
+
 ---
 
 ## Features
