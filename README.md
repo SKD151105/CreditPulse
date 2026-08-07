@@ -223,6 +223,27 @@ CreditPulse utilizes a fully automated CI/CD pipeline built with **GitHub Action
 
 ---
 
+## 🧪 Testing Scripts
+
+We have several manual testing scripts in the `server/tests/` directory. These are useful for verifying connections to external services like Redis and BullMQ, especially when debugging rate limits or background jobs.
+
+To run any of these scripts, ensure your `.env` variables are configured properly, and run them from the `server` directory using `tsx`:
+
+```bash
+cd server
+npx tsx tests/<script_name>.ts
+```
+
+| Script | Purpose | When to use |
+| :--- | :--- | :--- |
+| `test_ping.ts` | Tests basic connectivity and PING to Upstash Redis. | Use when checking if the Redis URI is correct and reachable. |
+| `test_pipeline.ts` | Tests Redis pipelined commands (`incr`, `expire`). | Use to verify Redis transaction/pipeline support. |
+| `test_ratelimit.ts` / `test_ratelimit2.ts` | Simulates the `rate-limit-redis` store incrementing keys. | Use to debug rate limiter issues and Redis store compatibility. |
+| `test_redis.ts` | Tests connection to BullMQ by adding a dummy job to the queue. | Use to verify BullMQ can successfully connect and add jobs to Redis. |
+| `test_simple*.ts` / `test_simple_long.ts` | Various Redis connection configurations (e.g. `family`, `enableReadyCheck`, TLS). | Use to debug specific Redis connection timeouts or TLS handshake issues. |
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
