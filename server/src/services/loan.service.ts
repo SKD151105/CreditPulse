@@ -82,10 +82,6 @@ export class LoanService {
       throw new NotFoundError('Loan application not found');
     }
 
-    if (loan.status !== 'draft') {
-      throw new BadRequestError('Only drafts can be updated');
-    }
-
     Object.assign(loan, data);
     await loan.save();
 
@@ -102,10 +98,6 @@ export class LoanService {
 
     if (!loan) {
       throw new NotFoundError('Loan application not found');
-    }
-
-    if (loan.status !== 'draft') {
-      throw new BadRequestError('Only draft applications can be submitted');
     }
 
     const requiredFields = ['fullName', 'panNumber', 'dateOfBirth', 'phone', 'employmentType', 'monthlyIncome'];

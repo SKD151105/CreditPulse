@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 import { motion } from 'framer-motion';
 import { Briefcase, CreditCard, User, AlertCircle, Loader2, Upload, FileText } from 'lucide-react';
@@ -33,6 +33,8 @@ export default function ApplicationForm() {
   const [error, setError] = useState<string>('');
   const [draftId, setDraftId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('id');
 
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -43,10 +45,36 @@ export default function ApplicationForm() {
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationSchema),
   });
+
+  useEffect(() => {
+    if (editId) {
+      setDraftId(editId);
+      axiosInstance.get(`/loans/${editId}`).then(res => {
+        const data = res.data.data;
+        const formattedDate = data.dateOfBirth ? new Date(data.dateOfBirth).toISOString().split('T')[0] : '';
+        reset({
+          loanType: data.loanType,
+          amount: data.amount,
+          tenure: data.tenure,
+          purpose: data.purpose,
+          fullName: data.fullName,
+          phone: data.phone,
+          dateOfBirth: formattedDate,
+          panNumber: data.panNumber,
+          employmentType: data.employmentType,
+          monthlyIncome: data.monthlyIncome,
+          fileUrl: data.fileUrl
+        });
+      }).catch(err => {
+        console.error("Failed to fetch loan for editing", err);
+      });
+    }
+  }, [editId, reset]);
 
   const fileUrl = watch('fileUrl');
 
