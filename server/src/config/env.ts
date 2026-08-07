@@ -15,6 +15,7 @@ const envSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().min(1, 'AWS_SECRET_ACCESS_KEY is required'),
   S3_BUCKET_NAME: z.string().min(1, 'S3_BUCKET_NAME is required'),
   GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
+  SUPER_ADMIN_SECRET: z.string().min(1, 'SUPER_ADMIN_SECRET is required'),
   CLIENT_URL: z.string().default('http://localhost:5173'),
 });
 

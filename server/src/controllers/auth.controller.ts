@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
 import User from '../models/User';
+import { env } from '../config/env';
 
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction) {
@@ -72,7 +73,7 @@ export class AuthController {
     try {
       const { email, secretKey } = req.body;
 
-      if (!secretKey || secretKey !== process.env.SUPER_ADMIN_SECRET) {
+      if (!secretKey || secretKey !== env.SUPER_ADMIN_SECRET) {
         res.status(403).json({ success: false, message: 'Forbidden' });
         return;
       }
