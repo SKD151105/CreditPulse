@@ -63,8 +63,9 @@ jobs:
                   - 8.8.4.4
             EOF
             
-            # 3. Pull the new image and restart the containers
+            # 3. Clean up space, pull the new image, and restart the containers
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker system prune -af --volumes
             docker pull ghcr.io/skd151105/creditpulse-server:latest
             docker compose -f docker-compose.prod.yml up -d
 
