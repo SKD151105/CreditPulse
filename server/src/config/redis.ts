@@ -6,6 +6,7 @@ const redisOptions: Record<string, any> = {
   enableReadyCheck: false, // Critical for Upstash: bypass INFO command check that hangs the connection
   family: 4, // Force IPv4 to prevent resolution hangs
   keepAlive: 10000, // Important for Upstash to prevent idle disconnects
+  enableOfflineQueue: false // CRITICAL: If Redis is down, fail fast instead of hanging the entire backend
 };
 
 const redis = new Redis(env.REDIS_URI, redisOptions);
