@@ -146,6 +146,7 @@ export default function AdminDashboard() {
 
   const totalPending = loans.filter(l => l.status === 'submitted' || l.status === 'under_review').length;
   const totalApproved = loans.filter(l => l.status === 'approved').length;
+  const totalRejected = loans.filter(l => l.status === 'rejected').length;
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-[#0a0a0a] text-white">
@@ -171,6 +172,13 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-xs text-gray-400">Approved</p>
                 <p className="text-xl font-bold">{totalApproved}</p>
+              </div>
+            </div>
+            <div className="glass border border-white/10 rounded-xl px-6 py-3 flex items-center">
+              <XCircle className="h-5 w-5 text-red-400 mr-3" />
+              <div>
+                <p className="text-xs text-gray-400">Rejected</p>
+                <p className="text-xl font-bold">{totalRejected}</p>
               </div>
             </div>
           </div>
