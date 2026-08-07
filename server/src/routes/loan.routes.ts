@@ -7,6 +7,12 @@ import { auditLog } from '../middleware/audit.middleware';
 
 const router = Router();
 
+router.get(
+  '/upload-url',
+  authenticate,
+  LoanController.getUploadUrl
+);
+
 router.post(
   '/',
   authenticate,

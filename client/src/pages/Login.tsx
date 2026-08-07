@@ -7,6 +7,8 @@ import axios from 'axios';
 import axiosInstance from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import { GoogleLogin } from '@react-oauth/google';
+import type { CredentialResponse } from '@react-oauth/google';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -46,6 +48,24 @@ export const Login = () => {
         setError(err.response?.data?.message || 'Failed to login');
       } else {
         setError('An unexpected error occurred');
+      }
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    setError('');
+    try {
+      const response = await axiosInstance.post('/auth/google', {
+        credential: credentialResponse.credential,
+      });
+      const { accessToken, user: userData } = response.data.data;
+      login(accessToken, userData);
+      navigate(userData.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Failed to login with Google');
+      } else {
+        setError('An unexpected error occurred during Google login');
       }
     }
   };
@@ -111,6 +131,25 @@ export const Login = () => {
             {isSubmitting ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="mt-6 relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-700"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 text-gray-400" style={{ background: '#1c1c1e' }}>Or continue with</span>
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-center opacity-90 hover:opacity-100 transition-opacity drop-shadow-md">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError('Google Sign-In failed')}
+            theme="filled_black"
+            shape="pill"
+            width="320px"
+          />
+        </div>
 
         <p className="mt-6 text-center text-gray-400 text-sm">
           Don't have an account?{' '}

@@ -15,6 +15,7 @@ export const updateDraftSchema = createDraftSchema.partial().extend({
   employmentType: z.enum(['salaried', 'self-employed', 'student']).optional(),
   monthlyIncome: z.number().positive().optional(),
   employerName: z.string().optional(),
+  fileUrl: z.string().url().optional(),
 });
 
 export const loanQuerySchema = z.object({

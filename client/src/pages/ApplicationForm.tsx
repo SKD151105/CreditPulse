@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 import { motion } from 'framer-motion';
-import { Briefcase, CreditCard, User, AlertCircle, Loader2 } from 'lucide-react';
+import { Briefcase, CreditCard, User, AlertCircle, Loader2, Upload, FileText } from 'lucide-react';
 import axios from 'axios';
 
 const applicationSchema = z.object({
@@ -22,7 +22,8 @@ const applicationSchema = z.object({
   employmentType: z.enum(['salaried', 'self-employed', 'student'], {
     required_error: "Please select employment type"
   }),
-  monthlyIncome: z.coerce.number().min(0, 'Income cannot be negative')
+  monthlyIncome: z.coerce.number().min(0, 'Income cannot be negative'),
+  fileUrl: z.string().url().optional()
 });
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
@@ -32,13 +33,60 @@ export default function ApplicationForm() {
   const [error, setError] = useState<string>('');
   const navigate = useNavigate();
 
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationSchema),
   });
+
+  const fileUrl = watch('fileUrl');
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingFile(true);
+    setUploadProgress(0);
+    setError('');
+
+    try {
+      const presignRes = await axiosInstance.get(`/loans/upload-url`, {
+        params: {
+          filename: file.name,
+          fileType: file.type
+        }
+      });
+
+      const { presignedUrl, fileUrl: finalFileUrl } = presignRes.data.data;
+
+      await axios.put(presignedUrl, file, {
+        headers: {
+          'Content-Type': file.type
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || file.size));
+          setUploadProgress(percentCompleted);
+        }
+      });
+
+      setValue('fileUrl', finalFileUrl);
+    } catch (err) {
+      setError('Failed to upload file. Please try again.');
+      console.error(err);
+    } finally {
+      setUploadingFile(false);
+      setUploadProgress(0);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const onSubmit = async (data: ApplicationFormValues) => {
     setIsSubmitting(true);
@@ -62,7 +110,8 @@ export default function ApplicationForm() {
         dateOfBirth: data.dateOfBirth,
         panNumber: data.panNumber,
         employmentType: data.employmentType,
-        monthlyIncome: data.monthlyIncome
+        monthlyIncome: data.monthlyIncome,
+        fileUrl: data.fileUrl
       });
       
       // Step 3: Submit application for scoring
@@ -253,6 +302,58 @@ export default function ApplicationForm() {
                 />
                 {errors.monthlyIncome && <p className="mt-1 text-sm text-red-400">{errors.monthlyIncome.message}</p>}
               </div>
+            </div>
+          </section>
+
+          <hr className="border-white/10" />
+
+          {/* SECTION 4: Documents */}
+          <section>
+            <div className="flex items-center mb-6 text-emerald-400">
+              <FileText className="h-6 w-6 mr-2" />
+              <h2 className="text-xl font-semibold text-white">Supporting Documents</h2>
+            </div>
+            
+            <div className="bg-gray-800/30 border border-gray-700 border-dashed rounded-xl p-8 text-center transition-all hover:bg-gray-800/50">
+              {fileUrl ? (
+                <div className="flex flex-col items-center justify-center">
+                   <div className="h-16 w-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mb-4">
+                     <FileText className="h-8 w-8" />
+                   </div>
+                   <p className="text-emerald-400 font-medium mb-2">Document Uploaded Successfully</p>
+                   <button 
+                     type="button" 
+                     onClick={() => setValue('fileUrl', undefined)}
+                     className="text-sm text-gray-400 hover:text-white"
+                   >
+                     Remove & Upload Different File
+                   </button>
+                </div>
+              ) : uploadingFile ? (
+                <div className="flex flex-col items-center justify-center">
+                   <Loader2 className="h-8 w-8 text-indigo-500 animate-spin mb-4" />
+                   <p className="text-white font-medium mb-2">Uploading Document...</p>
+                   <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
+                     <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                   </div>
+                   <p className="text-xs text-gray-400 mt-2">{uploadProgress}% Complete</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center">
+                   <div className="h-16 w-16 bg-gray-800 text-gray-400 rounded-full flex items-center justify-center mb-4 cursor-pointer hover:text-white hover:bg-gray-700 transition-all" onClick={() => fileInputRef.current?.click()}>
+                     <Upload className="h-8 w-8" />
+                   </div>
+                   <p className="text-white font-medium mb-1">Click to upload document</p>
+                   <p className="text-sm text-gray-400">PDF, JPG, or PNG (Max 5MB)</p>
+                   <input 
+                     type="file" 
+                     className="hidden" 
+                     ref={fileInputRef} 
+                     onChange={handleFileUpload} 
+                     accept=".pdf,.jpg,.jpeg,.png"
+                   />
+                </div>
+              )}
             </div>
           </section>
 
