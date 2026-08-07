@@ -31,6 +31,7 @@ type ApplicationFormValues = z.infer<typeof applicationSchema>;
 export default function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
+  const [draftId, setDraftId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -93,18 +94,23 @@ export default function ApplicationForm() {
     setError('');
     
     try {
-      // Step 1: Create draft with initial loan details
-      const draftRes = await axiosInstance.post('/loans', {
-        loanType: data.loanType,
-        amount: data.amount,
-        tenure: data.tenure,
-        purpose: data.purpose
-      });
-      
-      const loanId = draftRes.data.data._id;
+      let currentLoanId = draftId;
+
+      if (!currentLoanId) {
+        // Step 1: Create draft with initial loan details
+        const draftRes = await axiosInstance.post('/loans', {
+          loanType: data.loanType,
+          amount: data.amount,
+          tenure: data.tenure,
+          purpose: data.purpose
+        });
+        
+        currentLoanId = draftRes.data.data._id;
+        setDraftId(currentLoanId);
+      }
       
       // Step 2: Update draft with personal information
-      await axiosInstance.patch(`/loans/${loanId}`, {
+      await axiosInstance.patch(`/loans/${currentLoanId}`, {
         fullName: data.fullName,
         phone: data.phone,
         dateOfBirth: data.dateOfBirth,
@@ -115,8 +121,10 @@ export default function ApplicationForm() {
       });
       
       // Step 3: Submit application for scoring
-      await axiosInstance.post(`/loans/${loanId}/submit`);
+      await axiosInstance.post(`/loans/${currentLoanId}/submit`);
       
+      // Clear draft ID after successful submission
+      setDraftId(null);
       navigate('/dashboard');
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
