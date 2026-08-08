@@ -321,9 +321,12 @@ export default function AdminDashboard() {
                   )}
 
                   {['approved', 'rejected', 'disbursed'].includes(loan.status) && (
-                    <div className="w-full py-2 bg-white/5 text-gray-400 rounded-lg text-sm font-semibold text-center border border-white/5 flex items-center justify-center">
-                      <CheckCircle className="h-4 w-4 mr-2" /> Decision Reached
-                    </div>
+                    <button
+                      onClick={() => setSelectedLoan(loan)}
+                      className="w-full py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors rounded-lg text-sm font-semibold text-center border border-white/5 flex items-center justify-center cursor-pointer"
+                    >
+                      <Eye className="h-4 w-4 mr-2" /> View Details
+                    </button>
                   )}
                 </div>
               </motion.div>
@@ -494,33 +497,37 @@ export default function AdminDashboard() {
                 <AuditTimeline loanId={selectedLoan._id} />
               </div>
 
-              <div className="mb-8">
-                <label className="block text-sm font-medium text-gray-300 mb-2">Underwriter Remarks</label>
-                <textarea 
-                  value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Enter reason for approval or rejection..."
-                  rows={4}
-                  className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
-                />
-              </div>
+              {selectedLoan.status === 'under_review' && (
+                <>
+                  <div className="mb-8">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Underwriter Remarks</label>
+                    <textarea 
+                      value={remarks}
+                      onChange={(e) => setRemarks(e.target.value)}
+                      placeholder="Enter reason for approval or rejection..."
+                      rows={4}
+                      className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                    />
+                  </div>
 
-              <div className="flex gap-4">
-                <button
-                  onClick={() => handleDecision(selectedLoan._id, 'approved')}
-                  disabled={processing}
-                  className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors flex items-center justify-center shadow-[0_0_20px_-5px_rgba(16,185,129,0.5)] disabled:opacity-50"
-                >
-                  <CheckCircle className="h-5 w-5 mr-2" /> Approve
-                </button>
-                <button
-                  onClick={() => handleDecision(selectedLoan._id, 'rejected')}
-                  disabled={processing}
-                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors flex items-center justify-center shadow-[0_0_20px_-5px_rgba(239,68,68,0.5)] disabled:opacity-50"
-                >
-                  <XCircle className="h-5 w-5 mr-2" /> Reject
-                </button>
-              </div>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => handleDecision(selectedLoan._id, 'approved')}
+                      disabled={processing}
+                      className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors flex items-center justify-center shadow-[0_0_20px_-5px_rgba(16,185,129,0.5)] disabled:opacity-50"
+                    >
+                      <CheckCircle className="h-5 w-5 mr-2" /> Approve
+                    </button>
+                    <button
+                      onClick={() => handleDecision(selectedLoan._id, 'rejected')}
+                      disabled={processing}
+                      className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors flex items-center justify-center shadow-[0_0_20px_-5px_rgba(239,68,68,0.5)] disabled:opacity-50"
+                    >
+                      <XCircle className="h-5 w-5 mr-2" /> Reject
+                    </button>
+                  </div>
+                </>
+              )}
             </motion.div>
           </div>
         )}
