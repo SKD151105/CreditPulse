@@ -61,6 +61,13 @@ export default function ApplicationForm() {
     if (editId) {
       axiosInstance.get(`/loans/${editId}`).then(res => {
         const data = res.data.data;
+        
+        if (data.status !== 'draft') {
+          alert('This application has already been submitted and cannot be edited.');
+          navigate('/dashboard', { replace: true });
+          return;
+        }
+
         const formattedDate = data.dateOfBirth ? new Date(data.dateOfBirth).toISOString().split('T')[0] : '';
         reset({
           loanType: data.loanType,
