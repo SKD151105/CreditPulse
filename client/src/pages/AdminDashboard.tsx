@@ -84,28 +84,42 @@ export default function AdminDashboard() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchLoans = useCallback(async (currentPage: number) => {
-    setLoading(true);
+  const refetchLoans = useCallback(async (currentPage: number) => {
     try {
       const response = await axiosInstance.get(`/admin/loans?page=${currentPage}&limit=6`);
       setLoans(response.data.data.loans);
       setTotalPages(response.data.data.pagination.pages || 1);
     } catch (error) {
       console.error('Failed to fetch loans:', error);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchLoans(page);
-  }, [fetchLoans, page]);
+    let isMounted = true;
+    setLoading(true);
+    
+    axiosInstance.get(`/admin/loans?page=${page}&limit=6`)
+      .then(response => {
+        if (isMounted) {
+          setLoans(response.data.data.loans);
+          setTotalPages(response.data.data.pagination.pages || 1);
+        }
+      })
+      .catch(error => {
+        console.error('Failed to fetch loans:', error);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => { isMounted = false; };
+  }, [page]);
 
   const handleAssign = async (loanId: string) => {
     try {
       setProcessing(true);
       await axiosInstance.patch(`/admin/loans/${loanId}/assign`);
-      await fetchLoans(page);
+      await refetchLoans(page);
     } catch (err) {
       console.error(err);
       alert('Failed to assign loan');
@@ -129,7 +143,7 @@ export default function AdminDashboard() {
       });
       setSelectedLoan(null);
       setRemarks('');
-      await fetchLoans(page);
+      await refetchLoans(page);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setActionError(err.response?.data?.message || 'Failed to process decision');

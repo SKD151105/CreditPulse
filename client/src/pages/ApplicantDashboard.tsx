@@ -57,22 +57,36 @@ export default function ApplicantDashboard() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchLoans = useCallback(async (currentPage: number) => {
-    setLoading(true);
+  const refetchLoans = useCallback(async (currentPage: number) => {
     try {
       const response = await axiosInstance.get(`/loans?page=${currentPage}&limit=6`);
       setLoans(response.data.data.loans);
       setTotalPages(response.data.data.pagination.pages || 1);
     } catch (error) {
       console.error('Failed to fetch loans:', error);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchLoans(page);
-  }, [fetchLoans, page]);
+    let isMounted = true;
+    setLoading(true);
+    
+    axiosInstance.get(`/loans?page=${page}&limit=6`)
+      .then(response => {
+        if (isMounted) {
+          setLoans(response.data.data.loans);
+          setTotalPages(response.data.data.pagination.pages || 1);
+        }
+      })
+      .catch(error => {
+        console.error('Failed to fetch loans:', error);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => { isMounted = false; };
+  }, [page]);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -86,7 +100,7 @@ export default function ApplicantDashboard() {
         const data = JSON.parse(event.data);
         if (data.type !== 'system') {
           // Refetch loans to update UI immediately
-          fetchLoans(page);
+          refetchLoans(page);
         }
       } catch (err) {
         // Handle parsing errors or ignore raw text
@@ -95,7 +109,7 @@ export default function ApplicantDashboard() {
     };
     
     return () => sse.close();
-  }, [fetchLoans, page]);
+  }, [refetchLoans, page]);
 
   const handleDelete = async (loanId: string) => {
     if (!window.confirm('Are you sure you want to withdraw this application? This cannot be undone.')) return;
