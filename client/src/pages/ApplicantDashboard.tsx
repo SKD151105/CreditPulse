@@ -4,6 +4,7 @@ import { Activity, CreditCard, Clock, Plus, CheckCircle, Trash2 } from 'lucide-r
 import { Link } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import ApprovalLetter from '../components/ApprovalLetter';
 
 interface Loan {
   _id: string;
@@ -56,6 +57,16 @@ export default function ApplicantDashboard() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [printingLoan, setPrintingLoan] = useState<Loan | null>(null);
+
+  useEffect(() => {
+    if (printingLoan) {
+      setTimeout(() => {
+        window.print();
+        setPrintingLoan(null);
+      }, 300);
+    }
+  }, [printingLoan]);
 
   const refetchLoans = useCallback(async (currentPage: number) => {
     try {
@@ -236,9 +247,19 @@ export default function ApplicantDashboard() {
                   )}
                   
                   <div className="mt-4 text-xs text-gray-500 flex justify-between">
-                    <span>Term: {loan.term} months</span>
+                    <span>Term: {loan.term || (loan as any).tenure} months</span>
                     <span>{new Date(loan.createdAt).toLocaleDateString()}</span>
                   </div>
+                  
+                  {loan.status === 'approved' && (
+                    <button
+                      onClick={() => setPrintingLoan(loan)}
+                      className="mt-4 w-full py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-lg font-medium transition-colors flex items-center justify-center text-sm"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                      Download Official Letter
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -268,6 +289,10 @@ export default function ApplicantDashboard() {
           </div>
         )}
       </div>
+      
+      {printingLoan && (
+        <ApprovalLetter loan={printingLoan} user={user} />
+      )}
     </div>
   );
 }

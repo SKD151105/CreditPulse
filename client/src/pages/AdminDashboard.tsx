@@ -34,6 +34,11 @@ interface Loan {
   employmentType: string;
   fileUrl?: string;
   fileUrls?: string[];
+  phone?: string;
+  dateOfBirth?: string;
+  panNumber?: string;
+  tenure?: number;
+  loanType?: string;
 }
 
 const containerVariants: Variants = {
@@ -253,7 +258,7 @@ export default function AdminDashboard() {
                 <div className="flex justify-between items-end mb-6">
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Amount Requested</p>
-                    <p className="text-2xl font-bold">${loan.amount.toLocaleString()}</p>
+                    <p className="text-2xl font-bold">₹{loan.amount.toLocaleString()}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-gray-500 mb-1">Credit Score</p>
@@ -355,22 +360,46 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-8">
                 <div className="glass p-4 rounded-xl border border-white/5">
                   <p className="text-xs text-gray-500 mb-1">Applicant Name</p>
-                  <p className="font-semibold">{selectedLoan.fullName}</p>
+                  <p className="font-semibold truncate" title={selectedLoan.fullName}>{selectedLoan.fullName}</p>
                 </div>
                 <div className="glass p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-gray-500 mb-1">Amount Requested</p>
-                  <p className="font-semibold">${selectedLoan.amount.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 mb-1">Phone Number</p>
+                  <p className="font-semibold truncate">{selectedLoan.phone || 'N/A'}</p>
+                </div>
+                <div className="glass p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-gray-500 mb-1">PAN Number</p>
+                  <p className="font-semibold uppercase truncate">{selectedLoan.panNumber || 'N/A'}</p>
+                </div>
+                <div className="glass p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-gray-500 mb-1">Date of Birth</p>
+                  <p className="font-semibold truncate">{selectedLoan.dateOfBirth ? new Date(selectedLoan.dateOfBirth).toLocaleDateString() : 'N/A'}</p>
                 </div>
                 <div className="glass p-4 rounded-xl border border-white/5">
                   <p className="text-xs text-gray-500 mb-1">Employment</p>
-                  <p className="font-semibold capitalize">{selectedLoan.employmentType}</p>
+                  <p className="font-semibold capitalize truncate">{selectedLoan.employmentType}</p>
                 </div>
                 <div className="glass p-4 rounded-xl border border-white/5">
                   <p className="text-xs text-gray-500 mb-1">Monthly Income</p>
-                  <p className="font-semibold">${selectedLoan.monthlyIncome?.toLocaleString() || '0'}</p>
+                  <p className="font-semibold truncate">₹{selectedLoan.monthlyIncome?.toLocaleString() || '0'}</p>
+                </div>
+                <div className="glass p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-gray-500 mb-1">Loan Type</p>
+                  <p className="font-semibold capitalize truncate">{selectedLoan.loanType || 'N/A'}</p>
+                </div>
+                <div className="glass p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-gray-500 mb-1">Amount Requested</p>
+                  <p className="font-semibold truncate">₹{selectedLoan.amount.toLocaleString()}</p>
+                </div>
+                <div className="glass p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-gray-500 mb-1">Tenure</p>
+                  <p className="font-semibold truncate">{selectedLoan.tenure || selectedLoan.term || 0} Months</p>
+                </div>
+                <div className="glass p-4 rounded-xl border border-white/5 sm:col-span-3">
+                  <p className="text-xs text-gray-500 mb-1">Purpose</p>
+                  <p className="font-semibold">{selectedLoan.purpose || 'N/A'}</p>
                 </div>
               </div>
 
