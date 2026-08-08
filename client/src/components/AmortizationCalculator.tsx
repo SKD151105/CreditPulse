@@ -14,11 +14,17 @@ export default function AmortizationCalculator({ initialAmount = 100000, initial
 
   // Sync with parent form if they change
   useEffect(() => {
-    if (initialAmount && initialAmount > 0) setAmount(initialAmount);
+    const timer = setTimeout(() => {
+      if (initialAmount && initialAmount > 0) setAmount(initialAmount);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [initialAmount]);
 
   useEffect(() => {
-    if (initialTenure && initialTenure > 0) setTenure(initialTenure);
+    const timer = setTimeout(() => {
+      if (initialTenure && initialTenure > 0) setTenure(initialTenure);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [initialTenure]);
 
   const { emi, totalInterest, totalPayable } = useMemo(() => {
