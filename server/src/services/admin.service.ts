@@ -3,6 +3,8 @@ import { BadRequestError, NotFoundError } from '../utils/errors';
 import { NotificationService } from './notification.service';
 import { WebhookService } from './webhook.service';
 import { CacheService } from './cache.service';
+import { emailQueue } from '../queues/email.queue';
+import User from '../models/User';
 import logger from '../utils/logger';
 
 export class AdminService {
@@ -108,6 +110,18 @@ export class AdminService {
       approvedAmount: loan.approvedAmount,
       remarks
     });
+
+    // Dispatch Email Notification via BullMQ
+    const user = await User.findById(loan.applicantId).select('email name').lean();
+    if (user && user.email) {
+      await emailQueue.add('application_decision', {
+        type: 'application_decision',
+        email: user.email,
+        name: user.name,
+        status,
+        amount: loan.approvedAmount
+      });
+    }
 
     logger.info(`Loan ${loanId} marked as ${status} by admin ${adminId}`);
 

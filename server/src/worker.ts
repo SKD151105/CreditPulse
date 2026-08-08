@@ -1,6 +1,7 @@
 import { connectDB } from './config/db';
 import logger from './utils/logger';
 import { scoringWorker } from './workers/scoring.worker';
+import { emailWorker } from './workers/email.worker';
 import mongoose from 'mongoose';
 import redis from './config/redis';
 
@@ -11,12 +12,14 @@ async function startWorker() {
   
   // The workers are imported and automatically start listening
   logger.info('Scoring worker is listening for jobs on "scoring-queue"');
+  logger.info('Email worker is listening for jobs on "email-queue"');
 }
 
 // Graceful shutdown
 const gracefulShutdown = async (signal: string) => {
   logger.info(`Received ${signal}, shutting down worker gracefully...`);
   await scoringWorker.close();
+  await emailWorker.close();
   await mongoose.disconnect();
   redis.quit();
   process.exit(0);

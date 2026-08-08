@@ -1,6 +1,8 @@
 import LoanApplication from '../models/LoanApplication';
 import { CacheService } from './cache.service';
 import { scoringQueue } from '../config/queue';
+import { emailQueue } from '../queues/email.queue';
+import User from '../models/User';
 import { NotFoundError, BadRequestError, ValidationError } from '../utils/errors';
 import { CACHE_TTL } from '../utils/constants';
 
@@ -126,6 +128,16 @@ export class LoanService {
     await loan.save();
 
     await scoringQueue.add('score-loan', { loanId });
+    
+    // Dispatch Email Notification via BullMQ
+    const user = await User.findById(userId).select('email name').lean();
+    if (user && user.email) {
+      await emailQueue.add('application_received', {
+        type: 'application_received',
+        email: user.email,
+        name: user.name
+      });
+    }
 
     await Promise.all([
       CacheService.del(`loan:${loanId}`),
