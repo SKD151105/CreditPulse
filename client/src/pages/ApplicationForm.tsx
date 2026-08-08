@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -50,7 +50,7 @@ export default function ApplicationForm() {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     reset,
     formState: { errors },
   } = useForm<ApplicationFormValues>({
@@ -82,7 +82,7 @@ export default function ApplicationForm() {
     }
   }, [editId, reset]);
 
-  const fileUrl = watch('fileUrl');
+  const fileUrl = useWatch({ control, name: 'fileUrl' });
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
