@@ -78,8 +78,8 @@ export function AuditTimeline({ loanId }: { loanId: string }) {
     <div className="space-y-4">
       {logs.map((log, index) => {
         const isLast = index === logs.length - 1;
-        const details = log.details as Record<string, any>;
-        const body = details?.body;
+        const details = log.details as Record<string, unknown>;
+        const body = details?.body as Record<string, unknown> | undefined;
 
         return (
           <motion.div 
