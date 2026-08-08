@@ -39,4 +39,13 @@ export class AdminController {
       next(error);
     }
   }
+
+  static async getLoanAuditLogs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const logs = await AdminService.getLoanAuditLogs(req.params.id as string);
+      res.status(200).json({ success: true, data: logs });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

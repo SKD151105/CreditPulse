@@ -5,6 +5,7 @@ import axiosInstance from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { WebhookManager } from '../components/WebhookManager';
+import { AuditTimeline } from '../components/AuditTimeline';
 
 interface ScoreMetric {
   score: number;
@@ -487,6 +488,11 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
+
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-2">Activity Timeline</h3>
+                <AuditTimeline loanId={selectedLoan._id} />
+              </div>
 
               <div className="mb-8">
                 <label className="block text-sm font-medium text-gray-300 mb-2">Underwriter Remarks</label>

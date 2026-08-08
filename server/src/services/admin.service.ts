@@ -5,6 +5,7 @@ import { WebhookService } from './webhook.service';
 import { CacheService } from './cache.service';
 import { emailQueue } from '../queues/email.queue';
 import User from '../models/User';
+import AuditLog from '../models/AuditLog';
 import logger from '../utils/logger';
 
 export class AdminService {
@@ -126,5 +127,13 @@ export class AdminService {
     logger.info(`Loan ${loanId} marked as ${status} by admin ${adminId}`);
 
     return loan;
+  }
+
+  static async getLoanAuditLogs(loanId: string) {
+    const logs = await AuditLog.find({ resourceId: loanId, resource: 'loan' })
+      .populate('userId', 'name email role')
+      .sort({ createdAt: -1 })
+      .lean();
+    return logs;
   }
 }

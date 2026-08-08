@@ -25,6 +25,7 @@ export const auditLog = (action: string, resource: string) => {
             method: req.method,
             url: req.url,
             statusCode: res.statusCode,
+            ...(req.body && Object.keys(req.body).length > 0 ? { body: req.body } : {})
           },
           ipAddress: req.ip || req.socket.remoteAddress || 'unknown',
           userAgent: req.headers['user-agent'] || 'unknown',
