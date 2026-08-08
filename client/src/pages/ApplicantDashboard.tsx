@@ -252,7 +252,7 @@ export default function ApplicantDashboard() {
                     <span>{new Date(loan.createdAt).toLocaleDateString()}</span>
                   </div>
                   
-                  {loan.status === 'approved' && (
+                  {loan.status.toLowerCase() === 'approved' && (
                     <button
                       onClick={() => setPrintingLoan(loan)}
                       className="mt-4 w-full py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-lg font-medium transition-colors flex items-center justify-center text-sm"
