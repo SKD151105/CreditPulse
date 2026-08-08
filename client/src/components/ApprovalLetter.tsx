@@ -10,11 +10,10 @@ interface ApprovalLetterProps {
     approvedAmount?: number;
     term?: number;
     tenure?: number;
-    [key: string]: any;
+    createdAt?: string;
   };
   user?: {
     name?: string;
-    [key: string]: any;
   } | null;
 }
 

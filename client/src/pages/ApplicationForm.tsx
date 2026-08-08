@@ -7,6 +7,7 @@ import axiosInstance from '../api/axios';
 import { motion } from 'framer-motion';
 import { Briefcase, CreditCard, User, AlertCircle, Loader2, Upload, FileText, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
+import AmortizationCalculator from '../components/AmortizationCalculator';
 
 const applicationSchema = z.object({
   loanType: z.enum(['personal', 'business', 'education', 'home'], {
@@ -90,6 +91,8 @@ export default function ApplicationForm() {
   }, [editId, reset, navigate]);
 
   const fileUrls = useWatch({ control, name: 'fileUrls' }) || [];
+  const watchedAmount = useWatch({ control, name: 'amount' });
+  const watchedTenure = useWatch({ control, name: 'tenure' });
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -230,11 +233,12 @@ export default function ApplicationForm() {
 
   return (
     <div className="min-h-screen pt-24 pb-12 bg-[#0a0a0a] text-white px-4 sm:px-6 lg:px-8">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto glass border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl"
-      >
+      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex-1 w-full glass border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl"
+        >
         <div className="bg-white/5 p-8 border-b border-white/10">
           <button 
             type="button"
@@ -514,6 +518,19 @@ export default function ApplicationForm() {
           </div>
         </form>
       </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2 }}
+        className="w-full lg:w-[450px] shrink-0"
+      >
+        <AmortizationCalculator 
+          initialAmount={watchedAmount || 100000} 
+          initialTenure={watchedTenure || 12} 
+        />
+      </motion.div>
+      </div>
     </div>
   );
 }
