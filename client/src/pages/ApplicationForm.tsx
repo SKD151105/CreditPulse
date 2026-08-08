@@ -23,7 +23,7 @@ const applicationSchema = z.object({
     required_error: "Please select employment type"
   }),
   monthlyIncome: z.coerce.number().min(0, 'Income cannot be negative'),
-  fileUrls: z.array(z.string().url()).default([])
+  fileUrls: z.array(z.string().url()).optional()
 });
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
