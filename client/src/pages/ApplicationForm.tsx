@@ -35,6 +35,7 @@ export default function ApplicationForm() {
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('id');
   const [draftId, setDraftId] = useState<string | null>(editId);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
 
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -184,6 +185,46 @@ export default function ApplicationForm() {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const onSaveDraft = async (data: ApplicationFormValues) => {
+    setIsSavingDraft(true);
+    setError('');
+    
+    try {
+      let currentLoanId = draftId;
+
+      if (!currentLoanId) {
+        const draftRes = await axiosInstance.post('/loans', {
+          loanType: data.loanType,
+          amount: data.amount,
+          tenure: data.tenure,
+          purpose: data.purpose
+        });
+        currentLoanId = draftRes.data.data._id;
+        setDraftId(currentLoanId);
+      }
+      
+      await axiosInstance.patch(`/loans/${currentLoanId}`, {
+        fullName: data.fullName,
+        phone: data.phone,
+        dateOfBirth: data.dateOfBirth,
+        panNumber: data.panNumber,
+        employmentType: data.employmentType,
+        monthlyIncome: data.monthlyIncome,
+        fileUrls: data.fileUrls
+      });
+      
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Failed to save draft. Please try again.');
+      } else {
+        setError('An unexpected error occurred.');
+      }
+    } finally {
+      setIsSavingDraft(false);
     }
   };
 
@@ -439,20 +480,34 @@ export default function ApplicationForm() {
           </section>
 
           <div className="pt-6">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-4 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-all flex items-center justify-center shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                  Processing Application...
-                </>
-              ) : (
-                'Submit Application'
-              )}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                type="button"
+                onClick={handleSubmit(onSaveDraft)}
+                disabled={isSubmitting || isSavingDraft}
+                className="w-full sm:w-1/3 py-4 bg-gray-800 text-white border border-gray-700 font-semibold rounded-lg hover:bg-gray-700 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSavingDraft ? (
+                  <Loader2 className="animate-spin h-5 w-5" />
+                ) : (
+                  'Save Draft'
+                )}
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting || isSavingDraft}
+                className="w-full sm:w-2/3 py-4 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-all flex items-center justify-center shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                    Processing Application...
+                  </>
+                ) : (
+                  'Submit Application'
+                )}
+              </button>
+            </div>
             <p className="text-center text-xs text-gray-500 mt-4">
               By submitting this application, you authorize CreditPulse to access your credit report and process your data.
             </p>
