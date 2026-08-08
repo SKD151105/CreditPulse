@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { Activity, CreditCard, Clock, Plus, CheckCircle, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -57,7 +57,7 @@ export default function ApplicantDashboard() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchLoans = async (currentPage: number) => {
+  const fetchLoans = useCallback(async (currentPage: number) => {
     setLoading(true);
     try {
       const response = await axiosInstance.get(`/loans?page=${currentPage}&limit=6`);
@@ -68,11 +68,11 @@ export default function ApplicantDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchLoans(page);
-  }, [page]);
+  }, [fetchLoans, page]);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -95,7 +95,7 @@ export default function ApplicantDashboard() {
     };
     
     return () => sse.close();
-  }, []);
+  }, [fetchLoans, page]);
 
   const handleDelete = async (loanId: string) => {
     if (!window.confirm('Are you sure you want to withdraw this application? This cannot be undone.')) return;

@@ -9,7 +9,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "start:worker": "node dist/worker.js",
-    "seed": "tsx src/seed.ts"
+    "seed": "tsx src/scripts/seed.ts"
   },
   "keywords": [],
   "author": "",
