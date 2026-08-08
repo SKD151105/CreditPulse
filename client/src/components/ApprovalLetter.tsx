@@ -1,8 +1,21 @@
 
 
 interface ApprovalLetterProps {
-  loan: any;
-  user: any;
+  loan: {
+    _id: string;
+    fullName?: string;
+    loanType?: string;
+    purpose: string;
+    amount: number;
+    approvedAmount?: number;
+    term?: number;
+    tenure?: number;
+    [key: string]: any;
+  };
+  user?: {
+    name?: string;
+    [key: string]: any;
+  } | null;
 }
 
 export default function ApprovalLetter({ loan, user }: ApprovalLetterProps) {

@@ -14,6 +14,7 @@ interface Loan {
   status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'disbursed';
   creditScore?: number;
   createdAt: string;
+  tenure?: number;
 }
 
 const containerVariants: Variants = {
@@ -247,7 +248,7 @@ export default function ApplicantDashboard() {
                   )}
                   
                   <div className="mt-4 text-xs text-gray-500 flex justify-between">
-                    <span>Term: {loan.term || (loan as any).tenure} months</span>
+                    <span>Term: {loan.term || loan.tenure || 0} months</span>
                     <span>{new Date(loan.createdAt).toLocaleDateString()}</span>
                   </div>
                   
