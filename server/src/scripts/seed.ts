@@ -8,12 +8,12 @@ import { hashPassword } from '../utils/password';
 // Load env vars
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/creditpulse';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/creditpulse';
 
 const seedDatabase = async () => {
   try {
     console.log('Connecting to MongoDB...');
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGO_URI);
     console.log('Connected.');
 
     console.log('Clearing existing data...');
