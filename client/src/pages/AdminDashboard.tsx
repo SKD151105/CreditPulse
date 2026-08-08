@@ -81,11 +81,15 @@ export default function AdminDashboard() {
   const [remarks, setRemarks] = useState('');
   const [actionError, setActionError] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchLoans = useCallback(async () => {
+  const fetchLoans = useCallback(async (currentPage: number) => {
+    setLoading(true);
     try {
-      const response = await axiosInstance.get('/admin/loans');
+      const response = await axiosInstance.get(`/admin/loans?page=${currentPage}&limit=6`);
       setLoans(response.data.data.loans);
+      setTotalPages(response.data.data.pagination.pages || 1);
     } catch (error) {
       console.error('Failed to fetch loans:', error);
     } finally {
@@ -94,15 +98,14 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchLoans();
-  }, [fetchLoans]);
+    fetchLoans(page);
+  }, [fetchLoans, page]);
 
   const handleAssign = async (loanId: string) => {
     try {
       setProcessing(true);
       await axiosInstance.patch(`/admin/loans/${loanId}/assign`);
-      await fetchLoans();
+      await fetchLoans(page);
     } catch (err) {
       console.error(err);
       alert('Failed to assign loan');
@@ -126,7 +129,7 @@ export default function AdminDashboard() {
       });
       setSelectedLoan(null);
       setRemarks('');
-      await fetchLoans();
+      await fetchLoans(page);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setActionError(err.response?.data?.message || 'Failed to process decision');
@@ -272,6 +275,29 @@ export default function AdminDashboard() {
               </motion.div>
             ))}
           </motion.div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-12 space-x-4 mb-8">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+            >
+              Previous
+            </button>
+            <span className="text-gray-400 text-sm">
+              Page <span className="text-white font-medium">{page}</span> of <span className="text-white font-medium">{totalPages}</span>
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+            >
+              Next
+            </button>
+          </div>
         )}
       </div>
 
