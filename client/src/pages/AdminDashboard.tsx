@@ -4,6 +4,7 @@ import { CheckCircle, XCircle, UserPlus, Eye, X, Activity, AlertCircle } from 'l
 import axiosInstance from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { WebhookManager } from '../components/WebhookManager';
 
 interface ScoreMetric {
   score: number;
@@ -88,6 +89,7 @@ export default function AdminDashboard() {
   const [processing, setProcessing] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [activeTab, setActiveTab] = useState<'applications' | 'webhooks'>('applications');
 
   const refetchLoans = useCallback(async (currentPage: number) => {
     try {
@@ -192,8 +194,31 @@ export default function AdminDashboard() {
             <p className="text-gray-400">Review, assign, and process credit applications.</p>
           </div>
           
-          <div className="flex gap-4">
-            <div className="glass border border-white/10 rounded-xl px-6 py-3 flex items-center">
+          <div className="flex bg-white/5 border border-white/10 rounded-xl p-1">
+            <button
+              onClick={() => setActiveTab('applications')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === 'applications' ? 'bg-indigo-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Applications
+            </button>
+            <button
+              onClick={() => setActiveTab('webhooks')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                activeTab === 'webhooks' ? 'bg-indigo-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Partner Webhooks
+            </button>
+          </div>
+        </div>
+
+        {activeTab === 'applications' ? (
+          <>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+              <div className="flex gap-4 w-full overflow-x-auto pb-2 md:pb-0">
+                <div className="glass border border-white/10 rounded-xl px-6 py-3 flex items-center min-w-[200px]">
               <Activity className="h-5 w-5 text-indigo-400 mr-3" />
               <div>
                 <p className="text-xs text-gray-400">Pending Review</p>
@@ -326,6 +351,10 @@ export default function AdminDashboard() {
               Next
             </button>
           </div>
+        )}
+          </>
+        ) : (
+          <WebhookManager />
         )}
       </div>
 

@@ -2,6 +2,7 @@ import LoanApplication from '../models/LoanApplication';
 import { CacheService } from './cache.service';
 import { scoringQueue } from '../config/queue';
 import { emailQueue } from '../queues/email.queue';
+import { WebhookService } from './webhook.service';
 import User from '../models/User';
 import { NotFoundError, BadRequestError, ValidationError } from '../utils/errors';
 import { CACHE_TTL } from '../utils/constants';
@@ -138,6 +139,13 @@ export class LoanService {
         name: user.name
       });
     }
+
+    await WebhookService.dispatch('loan.submitted', {
+      loanId,
+      status: 'submitted',
+      amount: loan.amount,
+      purpose: loan.purpose
+    });
 
     await Promise.all([
       CacheService.del(`loan:${loanId}`),
