@@ -86,7 +86,7 @@ export default function ApplicationForm() {
         console.error("Failed to fetch loan for editing", err);
       });
     }
-  }, [editId, reset]);
+  }, [editId, reset, navigate]);
 
   const fileUrls = useWatch({ control, name: 'fileUrls' }) || [];
 
