@@ -32,6 +32,8 @@ interface Loan {
   scoringBreakdown?: ScoringBreakdown;
   monthlyIncome: number;
   employmentType: string;
+  fileUrl?: string;
+  fileUrls?: string[];
 }
 
 const containerVariants: Variants = {
@@ -281,7 +283,8 @@ export default function AdminDashboard() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0f1115] border border-gray-800 rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
+              className="bg-[#0f1115] border border-gray-800 rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: 'none' }}
             >
               <button 
                 onClick={() => {
@@ -321,6 +324,34 @@ export default function AdminDashboard() {
                   <p className="font-semibold">${selectedLoan.monthlyIncome?.toLocaleString() || '0'}</p>
                 </div>
               </div>
+
+              {(selectedLoan.fileUrls?.length ? selectedLoan.fileUrls : (selectedLoan.fileUrl ? [selectedLoan.fileUrl] : [])).length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-2">Supporting Documents</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {(selectedLoan.fileUrls?.length ? selectedLoan.fileUrls : (selectedLoan.fileUrl ? [selectedLoan.fileUrl] : [])).map((url, idx) => {
+                      const filename = url.split('/').pop()?.split('?')[0] || `Document ${idx + 1}`;
+                      return (
+                        <a 
+                          key={idx} 
+                          href={url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors group"
+                        >
+                          <div className="h-10 w-10 bg-emerald-500/20 text-emerald-400 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 group-hover:bg-emerald-500/30">
+                            <Eye className="h-5 w-5" />
+                          </div>
+                          <div className="overflow-hidden">
+                            <p className="text-sm font-medium text-white truncate" title={filename}>{filename}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Click to view</p>
+                          </div>
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {selectedLoan.scoringBreakdown && (
                 <div className="mb-8">

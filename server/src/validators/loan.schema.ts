@@ -16,6 +16,7 @@ export const updateDraftSchema = createDraftSchema.partial().extend({
   monthlyIncome: z.number().positive().optional(),
   employerName: z.string().optional(),
   fileUrl: z.string().url().optional(),
+  fileUrls: z.array(z.string().url()).optional(),
 });
 
 export const loanQuerySchema = z.object({

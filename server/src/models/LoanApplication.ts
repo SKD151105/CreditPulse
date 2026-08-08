@@ -62,6 +62,7 @@ export interface ILoanApplication extends Document {
   employerName?: string;
   documents: IDocumentSubdoc[];
   fileUrl?: string;
+  fileUrls?: string[];
   creditScore?: number;
   riskCategory?: 'low' | 'medium' | 'high' | 'very_high';
   scoringBreakdown?: IScoringBreakdown;
@@ -170,6 +171,7 @@ const loanApplicationSchema = new Schema<ILoanApplication>(
     employerName: { type: String },
     documents: { type: [documentSubSchema], default: [] },
     fileUrl: { type: String },
+    fileUrls: { type: [String], default: [] },
     creditScore: { type: Number, min: 0, max: 100 },
     riskCategory: {
       type: String,
