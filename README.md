@@ -66,7 +66,7 @@ Redis runs as a containerized instance alongside the Node.js API and Worker cont
 
 ## System Flow
 
-![System Architecture](./client/public/creditpulse_system_architecture.svg)
+![System Architecture](./client/public/creditpulse_system_architecture.png)
 
 ---
 
