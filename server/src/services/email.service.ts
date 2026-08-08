@@ -7,22 +7,42 @@ const initTransporter = async () => {
   if (transporter) return transporter;
   
   try {
+    // If real SMTP credentials are provided in .env, use them
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: Number(process.env.SMTP_PORT) === 465, 
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+      logger.info(`Real SMTP Transporter initialized using host: ${process.env.SMTP_HOST}`);
+      return transporter;
+    }
+
+    // Otherwise, fallback to Ethereal (Development Mode)
     const testAccount = await nodemailer.createTestAccount();
     transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,
-      secure: false, // true for 465, false for other ports
+      secure: false, 
       auth: {
-        user: testAccount.user, // generated ethereal user
-        pass: testAccount.pass, // generated ethereal password
+        user: testAccount.user,
+        pass: testAccount.pass,
       },
     });
     logger.info(`Ethereal Email Transporter initialized. User: ${testAccount.user}`);
     return transporter;
   } catch (err: any) {
-    logger.error('Failed to initialize Ethereal transporter', { error: err.message });
+    logger.error('Failed to initialize transporter', { error: err.message });
     throw err;
   }
+};
+
+const getFromAddress = () => {
+  return process.env.SMTP_FROM || '"CreditPulse Notifications" <no-reply@creditpulse.com>';
 };
 
 export class EmailService {
@@ -30,7 +50,7 @@ export class EmailService {
     const tp = await initTransporter();
     
     const info = await tp.sendMail({
-      from: '"CreditPulse Notifications" <no-reply@creditpulse.com>',
+      from: getFromAddress(),
       to: email,
       subject: 'Application Received - CreditPulse',
       text: `Dear ${name},\n\nWe have successfully received your loan application! Our team is currently reviewing your details. We will notify you once a decision is made.\n\nThank you for choosing CreditPulse!`,
@@ -46,7 +66,11 @@ export class EmailService {
       `,
     });
     
-    logger.info(`Email sent to ${email}. Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    if (info.messageId && !process.env.SMTP_HOST) {
+      logger.info(`Email sent to ${email}. Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    } else {
+      logger.info(`Real email successfully sent to ${email}`);
+    }
     return info;
   }
 
@@ -58,7 +82,7 @@ export class EmailService {
     const color = isApproved ? '#10b981' : '#ef4444';
     
     const info = await tp.sendMail({
-      from: '"CreditPulse Notifications" <no-reply@creditpulse.com>',
+      from: getFromAddress(),
       to: email,
       subject: `Application ${statusText} - CreditPulse`,
       text: `Dear ${name},\n\nYour loan application has been ${statusText}.${isApproved ? ` Your approved amount is ₹${amount}.` : ''}\n\nLogin to your dashboard to view more details.`,
@@ -75,7 +99,11 @@ export class EmailService {
       `,
     });
     
-    logger.info(`Email sent to ${email}. Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    if (info.messageId && !process.env.SMTP_HOST) {
+      logger.info(`Email sent to ${email}. Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    } else {
+      logger.info(`Real email successfully sent to ${email}`);
+    }
     return info;
   }
 }
