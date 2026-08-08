@@ -8,11 +8,11 @@ export interface AuditLogEntry {
   _id: string;
   action: string;
   userId?: { name: string; email: string; role: string };
-  details?: any;
+  details?: Record<string, unknown> | null;
   createdAt: string;
 }
 
-const getActionIcon = (action: string, body?: any) => {
+const getActionIcon = (action: string, body?: Record<string, unknown> | null) => {
   switch (action) {
     case 'CREATE_LOAN': return <FileText className="h-4 w-4 text-gray-400" />;
     case 'SUBMIT_LOAN': return <Upload className="h-4 w-4 text-blue-400" />;
@@ -22,7 +22,7 @@ const getActionIcon = (action: string, body?: any) => {
   }
 };
 
-const getActionColor = (action: string, body?: any) => {
+const getActionColor = (action: string, body?: Record<string, unknown> | null) => {
   if (action === 'UPDATE_LOAN_STATUS' && body?.status === 'rejected') return 'bg-red-500/20 text-red-400 border-red-500/30';
   if (action === 'UPDATE_LOAN_STATUS' && body?.status === 'approved') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
   if (action === 'SUBMIT_LOAN') return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
@@ -30,7 +30,7 @@ const getActionColor = (action: string, body?: any) => {
   return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
 };
 
-const getActionLabel = (action: string, body?: any) => {
+const getActionLabel = (action: string, body?: Record<string, unknown> | null) => {
   switch (action) {
     case 'CREATE_LOAN': return 'Draft Created';
     case 'SUBMIT_LOAN': return 'Application Submitted';
@@ -46,7 +46,10 @@ export function AuditTimeline({ loanId }: { loanId: string }) {
 
   useEffect(() => {
     let isMounted = true;
-    setLoading(true);
+    setTimeout(() => {
+      if (isMounted) setLoading(true);
+    }, 0);
+    
     axiosInstance.get(`/admin/loans/${loanId}/audit-logs`)
       .then(res => {
         if(isMounted) setLogs(res.data.data);
@@ -75,7 +78,8 @@ export function AuditTimeline({ loanId }: { loanId: string }) {
     <div className="space-y-4">
       {logs.map((log, index) => {
         const isLast = index === logs.length - 1;
-        const body = log.details?.body;
+        const details = log.details as Record<string, any>;
+        const body = details?.body;
 
         return (
           <motion.div 
