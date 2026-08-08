@@ -31,10 +31,10 @@ type ApplicationFormValues = z.infer<typeof applicationSchema>;
 export default function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
-  const [draftId, setDraftId] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('id');
+  const [draftId, setDraftId] = useState<string | null>(editId);
 
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -59,7 +59,6 @@ export default function ApplicationForm() {
 
   useEffect(() => {
     if (editId) {
-      setDraftId(editId);
       axiosInstance.get(`/loans/${editId}`).then(res => {
         const data = res.data.data;
         const formattedDate = data.dateOfBirth ? new Date(data.dateOfBirth).toISOString().split('T')[0] : '';
