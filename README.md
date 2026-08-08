@@ -66,40 +66,7 @@ Redis runs as a containerized instance alongside the Node.js API and Worker cont
 
 ## System Flow
 
-```mermaid
-flowchart TD
-    Client[Client Browser]
-    
-    subgraph Vercel[Vercel Edge]
-        FE[React Frontend]
-    end
-    
-    subgraph AWS_EC2[EC2 Host]
-        API[Node.js API]
-        Worker[BullMQ Worker]
-        Redis[(Docker Redis)]
-    end
-    
-    S3[AWS S3]
-    Mongo[(MongoDB Atlas)]
-    Resend[Resend API]
-    WebhookTarget[External CRMs]
-    
-    Client -- "HTTPS" --> FE
-    FE -- "REST / SSE proxy" --> API
-    FE -- "PUT (Pre-Signed)" --> S3
-    
-    API -- "R/W" --> Mongo
-    API -- "Queue / Rate Limit" --> Redis
-    
-    Worker -- "Process" --> Redis
-    Worker -- "Update" --> Mongo
-    
-    Worker -- "SSE Trigger" --> API
-    Worker -- "Dispatch" --> Resend
-    Worker -- "POST" --> WebhookTarget
-    API -- "SSE Stream" --> Client
-```
+<img src="./client/public/creditpulse_system_architecture.svg" alt="System Architecture" />
 
 ---
 
