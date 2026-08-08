@@ -1,249 +1,234 @@
 <div align="center">
-  <h1>CreditPulse</h1>
-  <p><strong>Enterprise-Grade Loan Origination and Underwriting Platform</strong></p>
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/React-Dark.svg" width="48" height="48" alt="React" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/NodeJS-Dark.svg" width="48" height="48" alt="Node.js" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/MongoDB.svg" width="48" height="48" alt="MongoDB" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Redis-Dark.svg" width="48" height="48" alt="Redis" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/AWS-Dark.svg" width="48" height="48" alt="AWS" />
+  <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Docker.svg" width="48" height="48" alt="Docker" />
 
-  [![Live Demo](https://img.shields.io/badge/Demo-Live-brightgreen.svg)](https://credit-pulse-xi.vercel.app/)
-  [![Node.js](https://img.shields.io/badge/Node.js-Backend-43853D.svg?logo=node.js&logoColor=white)](#)
-  [![React](https://img.shields.io/badge/React-Frontend-61DAFB.svg?logo=react&logoColor=black)](#)
-  [![Docker](https://img.shields.io/badge/Docker-Containers-2496ED.svg?logo=docker&logoColor=white)](#)
-  [![AWS](https://img.shields.io/badge/AWS-Cloud-232F3E.svg?logo=amazon-aws&logoColor=white)](#)
-  [![Redis](https://img.shields.io/badge/Redis-Cache-DC382D.svg?logo=redis&logoColor=white)](#)
-  [![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248.svg?logo=mongodb&logoColor=white)](#)
+  <h1>CreditPulse</h1>
+  <p><strong>Loan Origination and Underwriting System</strong></p>
+
+  [![Live Demo](https://img.shields.io/badge/Demo-Live-brightgreen.svg?style=for-the-badge)](https://credit-pulse-xi.vercel.app/)
+  [![Node.js](https://img.shields.io/badge/Node.js-Backend-43853D.svg?style=for-the-badge&logo=node.js&logoColor=white)](#)
+  [![React](https://img.shields.io/badge/React-Frontend-61DAFB.svg?style=for-the-badge&logo=react&logoColor=black)](#)
+  [![Docker](https://img.shields.io/badge/Docker-Containers-2496ED.svg?style=for-the-badge&logo=docker&logoColor=white)](#)
+  [![AWS](https://img.shields.io/badge/AWS-Cloud-232F3E.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)](#)
 </div>
 
 ---
 
-CreditPulse is a scalable, secure, and highly-available loan application and underwriting system. Built with modern microservice principles, it enables applicants to submit loan requests and upload supporting documentation securely, while providing underwriters with a real-time portal to review, score, and process applications.
+CreditPulse is a loan application and underwriting system designed around microservice principles. It provides secure applicant submission flows, automated risk scoring, and a real-time portal for underwriters to review and process applications.
 
 ## Table of Contents
 
-- [Engineering Decisions & Architecture Highlights](#engineering-decisions--architecture-highlights)
-- [Features](#features)
-- [Architecture Flow](#architecture-flow)
-- [Tech Stack](#tech-stack)
-- [Local Development Setup](#local-development-setup)
-- [Environment Variables](#environment-variables)
-- [CI/CD Pipeline](#cicd-pipeline)
-- [API Endpoints](#api-endpoints)
+- [Architecture Overview](#architecture-overview)
+- [Core Features](#core-features)
+- [System Flow](#system-flow)
+- [Technology Stack](#technology-stack)
+- [Local Environment Setup](#local-environment-setup)
+- [Configuration](#configuration)
+- [Deployment](#deployment)
+- [API Reference](#api-reference)
 
 ---
 
-## Engineering Decisions & Architecture Highlights
+## Architecture Overview
 
-This project was built with a strong emphasis on reliability, performance, and operational security. Several key architectural decisions were made to ensure the platform remains stable under load and network failure:
+The system architecture focuses on operational stability and fault tolerance under load:
 
-### 1. Fail-Fast Infrastructure and Graceful Degradation
-The backend incorporates a highly resilient rate-limiting and caching strategy. By configuring the Node.js Redis client to bypass offline queues (`enableOfflineQueue: false`), the application will "fail fast" if the Redis instance becomes unavailable. Furthermore, the rate-limiter is designed to gracefully catch cache-layer failures, allowing critical requests to bypass the limiter instead of crashing the server or hanging the event loop. This guarantees that the core application remains operational even during memory-store outages.
+### 1. Fail-Fast Caching and Rate Limiting
+The Node.js API relies on Redis for rate-limiting and short-lived caching. The Redis client is configured with `enableOfflineQueue: false` to ensure the application fails fast during cache outages. Rate limiters are designed to degrade gracefully, allowing core requests to process even if the memory-store connection drops, preventing event loop blocking.
 
-### 2. Containerized Local Redis for Zero-Latency IPC
-Rather than relying on external Serverless Redis providers (which introduce high network latency and strict connection limits), CreditPulse utilizes a containerized instance of Redis running directly alongside the Node.js API and Worker containers within the same Docker network on the EC2 host. This drastically reduces inter-process communication (IPC) latency to less than 1ms and provides unlimited connection scaling for BullMQ job processing and Express rate-limiting.
+### 2. Event-Driven Background Processing
+Asynchronous tasks are managed via **BullMQ** on a containerized Redis instance to decouple heavy operations from the main API thread:
+- **Webhooks:** Outbound HTTP requests to external CRMs execute in the background with automatic retries and exponential backoff.
+- **Email Delivery:** Transactional notifications are queued and dispatched via Resend.
 
-### 3. Stateless Pre-Signed S3 Uploads
-To prevent the Node.js backend from becoming a bottleneck during large file uploads, the architecture utilizes stateless S3 Pre-Signed URLs. When an applicant uploads a document, the backend instantly computes a cryptographic signature (SHA-256 HMAC) entirely offline and returns the URL. The client's browser then executes a direct `PUT` request to the AWS S3 bucket. This offloads all heavy bandwidth and memory consumption away from the application servers directly to AWS infrastructure.
+### 3. Stateless S3 Uploads
+Large file uploads (e.g., identity documents, pay slips) are handled client-side via S3 Pre-Signed URLs. The Node.js backend computes a cryptographic signature (HMAC SHA-256) and returns a temporary URL. The client executes a direct `PUT` to the AWS S3 bucket, preventing the API servers from buffering large binary payloads.
 
-### 4. Zero-Downtime Automated Deployments
-The deployment pipeline is fully automated via GitHub Actions. On every merge to `main`, the CI pipeline builds an optimized, multi-stage Docker image, pushes it to the GitHub Container Registry (GHCR), and securely triggers the AWS EC2 host via SSH to pull the latest image. The deployment script leverages `docker compose up -d` to swap containers with zero downtime, dynamically injecting production secrets without storing them in the repository.
-
-### 5. Operational Resilience & Edge-Case Handling
-The platform is hardened against several deep-infrastructure edge cases commonly encountered in distributed deployments:
-- **Reverse Proxy IP Spoofing:** Configured Express trust-proxy settings to safely resolve actual client IPs behind Vercel's edge network, preventing rate-limiter bypasses.
-- **Node.js IPv6 DNS Resolution:** Mitigated Dockerized Node 18+ DNS hanging issues on AWS by explicitly forcing IPv4 resolution (`--dns-result-order=ipv4first`), ensuring stable connections to MongoDB Atlas.
-- **Unhandled Promise Rejection Loops:** Implemented strict error-boundary listeners on the `ioredis` client to prevent the Node.js event loop from crashing during transient network disconnects from the cache layer.
+### 4. Containerized IPC
+Redis runs as a containerized instance alongside the Node.js API and Worker containers on the same Docker bridge network. This reduces inter-process communication (IPC) latency to <1ms compared to external managed caches.
 
 ---
 
-## Features
+## Core Features
 
-- **Role-Based Access Control (RBAC):** Distinct permission boundaries and user interfaces for Applicants and Admins (Underwriters).
-- **Secure Authentication:** Combines JWT-based authentication (short-lived access tokens, HTTP-only refresh tokens) with secure Google OAuth 2.0 implementation.
-- **Event-Driven Real-Time Notifications:** Admin status changes trigger background jobs that instantly push live updates to the applicant's browser via Server-Sent Events (SSE).
-- **Automated Risk Scoring Engine:** Implements a backend scoring algorithm that mathematically evaluates income-to-loan ratios, employment stability, and document completeness to generate an instant risk profile.
-- **Containerized Microservices:** Clean separation of concerns between the API gateway, background BullMQ workers, and caching layer using Docker Compose.
+- **Role-Based Access Control (RBAC):** Strict permission boundaries between Applicants and Admins.
+- **Audit Logging:** Logs state changes (creations, assignments, status updates) to a dedicated collection, rendered as a chronological Activity Timeline in the administrative portal.
+- **Risk Scoring Engine:** Evaluates income-to-loan ratios, employment stability, and document completeness to generate automated risk profiles.
+- **Authentication:** Utilizes short-lived JWT access tokens, HTTP-only refresh tokens, and Google OAuth 2.0.
+- **Real-Time Notifications:** Admin actions trigger background jobs that push updates to the applicant's browser via Server-Sent Events (SSE).
+- **Webhooks (HMAC Verified):** Allows administrators to register external endpoints for real-time JSON payloads on loan status changes, authenticated via `x-creditpulse-signature`.
 
 ---
 
-## Architecture Flow
+## System Flow
 
 ```mermaid
 flowchart TD
-    %% Entities
-    Client[Browser / User]
+    Client[Client Browser]
     
-    %% Frontend
-    subgraph Vercel[Vercel Edge Network]
-        FE[React + Vite Frontend]
+    subgraph Vercel[Vercel Edge]
+        FE[React Frontend]
     end
     
-    %% AWS Backend
-    subgraph AWS[AWS EC2 Host]
-        API[Node.js Express API]
+    subgraph AWS_EC2[EC2 Host]
+        API[Node.js API]
         Worker[BullMQ Worker]
-        Redis[(Docker Redis Container)]
+        Redis[(Docker Redis)]
     end
     
-    %% External Services
-    S3[AWS S3 Bucket]
+    S3[AWS S3]
     Mongo[(MongoDB Atlas)]
+    Resend[Resend API]
+    WebhookTarget[External CRMs]
     
-    %% Flow
-    Client -- "HTTPS requests" --> FE
-    FE -- "API Calls & Proxy" --> API
-    FE -- "Direct PUT (Pre-Signed)" --> S3
+    Client -- "HTTPS" --> FE
+    FE -- "REST / SSE proxy" --> API
+    FE -- "PUT (Pre-Signed)" --> S3
     
-    API -- "Read/Write" --> Mongo
-    API -- "Queue Jobs & Rate Limit" --> Redis
+    API -- "R/W" --> Mongo
+    API -- "Queue / Rate Limit" --> Redis
     
-    Worker -- "Process Jobs" --> Redis
-    Worker -- "Update DB" --> Mongo
+    Worker -- "Process" --> Redis
+    Worker -- "Update" --> Mongo
     
-    %% Real-time Flow
-    Worker -- "Trigger SSE" --> API
-    API -- "Live Status Updates" --> Client
+    Worker -- "SSE Trigger" --> API
+    Worker -- "Dispatch" --> Resend
+    Worker -- "POST" --> WebhookTarget
+    API -- "SSE Stream" --> Client
 ```
 
 ---
 
-## Tech Stack
+## Technology Stack
 
-| Layer | Technology | Purpose |
+| Component | Technology | Description |
 | :--- | :--- | :--- |
-| **Frontend** | React + Vite | Fast, responsive client-side application with dynamic chunking. |
-| **Backend API** | Node.js + Express | Highly scalable runtime for handling REST API requests. |
-| **Language** | TypeScript | End-to-end type safety across the entire stack. |
-| **Database** | MongoDB Atlas | Managed NoSQL database for flexible, schema-less document storage. |
-| **Queue & Cache**| Redis + BullMQ | Containerized Redis managing asynchronous background jobs and rate limits. |
-| **Storage** | AWS S3 | Secure, scalable object storage for applicant documents. |
-| **Real-time** | Server-Sent Events (SSE) | Lightweight, unidirectional live event streaming to connected clients. |
-| **Hosting** | Vercel & AWS EC2 | Vercel for frontend edge CDN; EC2 for running Dockerized backend services. |
+| **Frontend** | React, Vite, TailwindCSS | Client-side application bundle. |
+| **Backend** | Node.js, Express | REST API and WebSocket/SSE provider. |
+| **Language** | TypeScript | Strict typing across the stack. |
+| **Database** | MongoDB Atlas | Primary operational datastore. |
+| **Message Broker**| Redis, BullMQ | Job queuing and rate limiting. |
+| **Object Storage**| AWS S3 | Secure storage for applicant documents. |
+| **Email Service** | Resend | Transactional email provider. |
+| **Infrastructure**| Docker, AWS EC2, Vercel | Containerized backend services and edge-cached frontend. |
 
 ---
 
-## Local Development Setup
-
-Follow these steps to run the CreditPulse stack locally.
+## Local Environment Setup
 
 ### Prerequisites
-- Node.js (v18+)
-- Docker & Docker Compose
-- A MongoDB Atlas cluster (or local MongoDB)
-- An AWS Account (for S3 and IAM credentials)
-- Google Cloud Console Project (for OAuth credentials)
+- Node.js 18+
+- Docker and Docker Compose
+- MongoDB instance (Local or Atlas)
+- AWS IAM Credentials (for S3)
+- Google OAuth 2.0 Credentials
+- Resend API Key
 
-### 1. Clone the repository
+### 1. Repository Setup
 ```bash
 git clone https://github.com/SKD151105/CreditPulse.git
 cd CreditPulse
+
+# Install API dependencies
+cd server && npm install
+
+# Install UI dependencies
+cd ../client && npm install
 ```
 
-### 2. Install Dependencies
-```bash
-# Install backend dependencies
-cd server
-npm install
-
-# Install frontend dependencies
-cd ../client
-npm install
-```
-
-### 3. Run Locally with Docker Compose
-To replicate the production environment locally, utilize Docker Compose to spin up the API, Worker, and Redis container simultaneously. Ensure you have created the necessary `.env` files first.
+### 2. Execution via Docker Compose
+The local development environment uses Docker Compose to orchestrate the API, Worker, and Redis containers.
 
 ```bash
-# Start backend (API, Worker, Redis)
+# Start backend services
 cd server
 docker compose up -d
 
-# Start frontend
+# Start frontend development server
 cd ../client
 npm run dev
 ```
 
 ---
 
-## Environment Variables
+## Configuration
 
-### Backend (`server/.env`)
-The backend requires the following environment variables.
+### API Environment (`server/.env`)
 
-| Name | Description | Example |
-| :--- | :--- | :--- |
-| `PORT` | The port the API runs on | `5000` |
-| `NODE_ENV` | Environment state | `development` / `production` |
-| `MONGO_URI` | MongoDB Connection String | `mongodb+srv://...` |
-| `REDIS_URI` | Internal Redis Connection String | `redis://localhost:6379` |
-| `JWT_ACCESS_SECRET` | Secret key for signing Access Tokens | `your_super_secret_key` |
-| `JWT_REFRESH_SECRET`| Secret key for signing Refresh Tokens | `another_super_secret_key` |
-| `JWT_ACCESS_EXPIRES_IN`| Lifespan of the Access Token | `15m` |
-| `JWT_REFRESH_EXPIRES_IN`| Lifespan of the Refresh Token | `7d` |
-| `AWS_REGION` | AWS Region for the S3 Bucket | `ap-south-1` |
-| `AWS_ACCESS_KEY_ID` | AWS IAM Access Key | `AKIA...` |
-| `AWS_SECRET_ACCESS_KEY`| AWS IAM Secret Key | `secret...` |
-| `S3_BUCKET_NAME` | Name of the AWS S3 Bucket | `creditpulse-docs` |
-| `GOOGLE_CLIENT_ID` | Google OAuth 2.0 Client ID | `123-abc.apps.google...` |
-| `GOOGLE_CLIENT_SECRET`| Google OAuth 2.0 Client Secret | `GOCSPX-...` |
-| `CLIENT_URL` | Allowed CORS origin (Frontend URL) | `http://localhost:5173` |
-| `SUPER_ADMIN_SECRET` | Passphrase to promote users to Admin | `admin_secret` |
+| Variable | Description |
+| :--- | :--- |
+| `PORT` | API port (default: 5000) |
+| `NODE_ENV` | `development` or `production` |
+| `MONGO_URI` | MongoDB connection string |
+| `REDIS_URI` | Redis connection string (`redis://localhost:6379`) |
+| `JWT_ACCESS_SECRET` | Secret for signing Access Tokens |
+| `JWT_REFRESH_SECRET`| Secret for signing Refresh Tokens |
+| `AWS_REGION` | AWS Region for S3 |
+| `AWS_ACCESS_KEY_ID` | AWS IAM Access Key |
+| `AWS_SECRET_ACCESS_KEY`| AWS IAM Secret Key |
+| `S3_BUCKET_NAME` | AWS S3 Bucket Name |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
+| `GOOGLE_CLIENT_SECRET`| Google OAuth Client Secret |
+| `RESEND_API_KEY` | Resend API Key |
+| `CLIENT_URL` | Allowed CORS origin |
+| `SUPER_ADMIN_SECRET` | Passphrase for Admin promotion |
+| `WEBHOOK_SECRET` | Secret used to sign HMAC webhook payloads |
 
-### Frontend (`client/.env`)
-Create a `.env` file in the `client/` directory to configure the React application.
+### Client Environment (`client/.env`)
 
-| Name | Description | Example |
-| :--- | :--- | :--- |
-| `VITE_GOOGLE_CLIENT_ID` | Google OAuth 2.0 Client ID | `123-abc.apps.googleusercontent.com` |
-| `VITE_API_URL` | Backend API URL (for production) | `https://api.yourdomain.com/api` |
+| Variable | Description |
+| :--- | :--- |
+| `VITE_GOOGLE_CLIENT_ID` | Google OAuth Client ID |
+| `VITE_API_URL` | Target API URL |
 
 ---
 
-## CI/CD Pipeline
+## Deployment
 
-CreditPulse utilizes a fully automated CI/CD pipeline built with **GitHub Actions**. Whenever code is pushed to the `main` branch, the workflow (`.github/workflows/deploy.yml`) performs the following:
+Continuous Integration and Deployment are managed via GitHub Actions (`.github/workflows/deploy.yml`).
 
-1. **Build & Push:** Checks out the code, logs into the GitHub Container Registry (`ghcr.io`), builds the multi-stage Docker image for the backend, and pushes it to the registry.
-2. **Configuration Injection:** Connects securely to the AWS EC2 production host via SSH, dynamically generating the `.env.prod` and `docker-compose.prod.yml` files using securely stored GitHub Secrets.
-3. **Zero-Downtime Rollout:** The EC2 server pulls the latest Docker images from GHCR and executes `docker compose up -d` to seamlessly recreate and restart the API, Worker, and internal Redis containers.
+1. **Build Phase:** Code pushed to `main` triggers a multi-stage Docker build. The resulting image is pushed to the GitHub Container Registry (`ghcr.io`).
+2. **Provisioning:** The pipeline connects to the AWS EC2 host via SSH, writing necessary environment variables from GitHub Secrets.
+3. **Rollout:** The host pulls the latest image and executes `docker compose up -d` to recreate containers with zero downtime.
 
 ---
 
-## API Endpoints
+## API Reference
 
-### Auth Routes
-| Method | Endpoint | Description | Auth Required |
+### Authentication
+| Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register a new applicant | No |
-| `POST` | `/api/auth/login` | Login with email/password | No |
-| `POST` | `/api/auth/google` | Authenticate via Google OAuth | No |
-| `POST` | `/api/auth/refresh` | Rotate JWT refresh tokens | No |
-| `POST` | `/api/auth/logout` | Invalidate refresh tokens | Yes |
-| `POST` | `/api/auth/promote` | Promote standard user to Admin | No (Requires Secret) |
-| `GET`  | `/api/auth/me` | Get current user profile | Yes |
+| `POST` | `/api/auth/register` | Register applicant | No |
+| `POST` | `/api/auth/login` | Email/password login | No |
+| `POST` | `/api/auth/google` | Google OAuth | No |
+| `POST` | `/api/auth/refresh` | Rotate tokens | No |
+| `POST` | `/api/auth/logout` | Invalidate session | Yes |
 
-### Loan Application Routes
-| Method | Endpoint | Description | Auth Required |
+### Loan Operations
+| Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/loans` | Create a new draft loan application | Yes |
-| `GET`  | `/api/loans` | Get all loans (Applicant sees own; Admin sees all) | Yes |
-| `GET`  | `/api/loans/:id` | Get specific loan details | Yes |
-| `PATCH`| `/api/loans/:id` | Update a draft loan application | Yes |
-| `POST` | `/api/loans/:id/submit`| Submit a completed application | Yes |
-| `GET`  | `/api/loans/upload-url`| Get S3 Pre-signed URL for document upload | Yes |
+| `POST` | `/api/loans` | Create draft application | Yes |
+| `GET`  | `/api/loans` | List applications | Yes |
+| `GET`  | `/api/loans/:id` | Get application details | Yes |
+| `PATCH`| `/api/loans/:id` | Update draft | Yes |
+| `POST` | `/api/loans/:id/submit`| Submit application | Yes |
 
-### Admin Routes
-| Method | Endpoint | Description | Auth Required |
+### Administrative & System
+| Method | Endpoint | Description | Auth |
 | :--- | :--- | :--- | :--- |
-| `GET`  | `/api/admin/loans` | Get all loan applications for review | Yes (Admin) |
-| `PATCH`| `/api/admin/loans/:id/assign` | Assign a loan application to self | Yes (Admin) |
-| `PATCH`| `/api/admin/loans/:id/status` | Approve or Reject a loan | Yes (Admin) |
-
-### Real-Time Notifications
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `GET`  | `/api/notifications/stream` | Subscribe to live Server-Sent Events | Yes |
-| `GET`  | `/api/notifications` | Fetch historical notifications | Yes |
-| `PATCH`| `/api/notifications/:id/read` | Mark a notification as read | Yes |
+| `GET`  | `/api/admin/loans` | List all applications | Yes (Admin) |
+| `GET`  | `/api/admin/loans/:id/audit-logs` | Retrieve application audit trail | Yes (Admin) |
+| `PATCH`| `/api/admin/loans/:id/assign` | Assign application | Yes (Admin) |
+| `PATCH`| `/api/admin/loans/:id/status` | Update application status | Yes (Admin) |
+| `GET`  | `/api/webhooks` | List webhook configurations | Yes (Admin) |
+| `POST` | `/api/webhooks` | Register webhook endpoint | Yes (Admin) |
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
