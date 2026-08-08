@@ -114,7 +114,7 @@ export function AuditTimeline({ loanId }: { loanId: string }) {
               {body?.remarks && (
                 <div className="mt-3 bg-black/40 border border-gray-800 rounded-lg p-3 text-xs text-gray-300 italic flex">
                   <div className="w-1 bg-indigo-500/50 rounded-full mr-3 shrink-0"></div>
-                  "{body.remarks}"
+                  "{body.remarks as string}"
                 </div>
               )}
             </div>
