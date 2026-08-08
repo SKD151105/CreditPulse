@@ -80,6 +80,7 @@ export function AuditTimeline({ loanId }: { loanId: string }) {
         const isLast = index === logs.length - 1;
         const details = log.details as Record<string, unknown>;
         const body = details?.body as Record<string, unknown> | undefined;
+        const remarks = body?.remarks as string | undefined;
 
         return (
           <motion.div 
@@ -111,10 +112,10 @@ export function AuditTimeline({ loanId }: { loanId: string }) {
                 </span>
               </div>
               
-              {body?.remarks && (
+              {remarks && (
                 <div className="mt-3 bg-black/40 border border-gray-800 rounded-lg p-3 text-xs text-gray-300 italic flex">
                   <div className="w-1 bg-indigo-500/50 rounded-full mr-3 shrink-0"></div>
-                  "{body.remarks as string}"
+                  "{remarks}"
                 </div>
               )}
             </div>
