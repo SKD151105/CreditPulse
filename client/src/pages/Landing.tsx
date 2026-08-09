@@ -1,5 +1,5 @@
 import { motion, type Variants } from 'framer-motion';
-import { ShieldCheck, Zap, BarChart3, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Zap, BarChart3, ArrowRight, Server, Database, Code, CheckCircle2, Cloud, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -55,7 +55,7 @@ export const Landing = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className="text-5xl sm:text-6xl md:text-8xl font-extrabold tracking-tighter mb-8 max-w-5xl leading-tight"
+          className="text-4xl sm:text-5xl md:text-8xl font-extrabold tracking-tighter mb-8 max-w-5xl leading-tight"
         >
           The Future of <br className="hidden md:block" />
           <span className="bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -67,9 +67,9 @@ export const Landing = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto"
+          className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto px-4"
         >
-          AI-powered risk scoring, real-time webhooks, and instant decisions built for modern financial teams.
+          Algorithmic risk scoring, real-time webhooks, and instant decisions built for modern financial teams.
         </motion.p>
 
         <motion.div
@@ -176,6 +176,268 @@ export const Landing = () => {
           </motion.div>
         </motion.div>
       </section>
+
+      {/* 1. Intelligent Underwriting Engine */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-white/5 bg-gray-900/50">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
+              The Intelligent <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Underwriting Engine</span>
+            </h2>
+            <p className="text-lg md:text-xl text-gray-400 mb-8 leading-relaxed">
+              Say goodbye to manual reviews. Our algorithmic risk engine evaluates key financial data points instantly, including income-to-loan ratios, employment stability, and document completeness, to generate highly accurate risk profiles.
+            </p>
+            <ul className="space-y-4">
+              {['Document Completeness Checks', 'Employment Stability Scoring', 'Debt-to-Income (DTI) Analysis'].map((item, i) => (
+                <li key={i} className="flex items-center text-gray-300 text-base md:text-lg">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-400 mr-3 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="relative"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 blur-[100px] rounded-full" />
+            <div className="glass border border-white/10 rounded-2xl p-8 relative shadow-2xl backdrop-blur-xl transform rotate-2 hover:rotate-0 transition-transform duration-500">
+              <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+                <div>
+                  <h4 className="text-white font-bold text-lg">Applicant: John Doe</h4>
+                  <p className="text-gray-400 text-sm">ID: #APP-8492-X</p>
+                </div>
+                <div className="bg-emerald-400/10 text-emerald-400 px-4 py-1.5 rounded-full text-sm font-semibold border border-emerald-400/20">
+                  Low Risk
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="bg-gray-900/50 rounded-xl p-4 border border-white/5">
+                  <p className="text-gray-400 text-sm mb-1">Risk Score</p>
+                  <p className="text-3xl font-bold text-white">845<span className="text-sm text-gray-500 font-normal">/1000</span></p>
+                  <div className="w-full bg-gray-800 h-2 mt-3 rounded-full overflow-hidden">
+                    <div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-[85%]" />
+                  </div>
+                </div>
+                <div className="bg-gray-900/50 rounded-xl p-4 border border-white/5">
+                  <p className="text-gray-400 text-sm mb-1">DTI Ratio</p>
+                  <p className="text-3xl font-bold text-white">24%</p>
+                  <p className="text-emerald-400 text-xs mt-2 flex items-center"><Activity className="h-3 w-3 mr-1"/> Optimal</p>
+                </div>
+              </div>
+              
+              <div className="w-full bg-white/5 border border-white/10 text-white text-center font-medium py-3 rounded-xl cursor-default">
+                View Full Analysis
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 2. Real-time Infrastructure */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-white/5">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+          
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="order-2 lg:order-1 relative"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-orange-500/20 blur-[100px] rounded-full" />
+            
+            {/* Terminal Window Mockup */}
+            <div className="glass border border-white/10 rounded-2xl overflow-hidden relative shadow-2xl backdrop-blur-xl">
+              <div className="bg-black/40 px-4 py-3 flex items-center border-b border-white/10">
+                <div className="flex space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                </div>
+                <p className="text-gray-500 text-xs ml-4 font-mono">webhook-listener.ts</p>
+              </div>
+              <div className="p-6 overflow-x-auto text-sm font-mono text-gray-300">
+                <p className="text-purple-400">POST <span className="text-gray-300">/api/webhooks/receive</span></p>
+                <p className="mt-4">{'{'}</p>
+                <p className="ml-4">"event": <span className="text-green-400">"loan.approved"</span>,</p>
+                <p className="ml-4">"payload": {'{'}</p>
+                <p className="ml-8">"loanId": <span className="text-yellow-400">"65a2b...91"</span>,</p>
+                <p className="ml-8">"amount": <span className="text-orange-400">50000</span>,</p>
+                <p className="ml-8">"approvedBy": <span className="text-green-400">"Admin Team"</span></p>
+                <p className="ml-4">{'}'}</p>
+                <p>{'}'}</p>
+                <div className="mt-4 flex items-center text-emerald-400 text-xs animate-pulse">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full mr-2" />
+                  Status: 200 OK (12ms)
+                </div>
+              </div>
+            </div>
+            
+            {/* Floating Toast Notification Mockup */}
+            <div className="absolute -right-6 -bottom-6 glass border border-white/20 bg-gray-900/90 p-4 rounded-xl shadow-2xl flex items-center space-x-4 max-w-sm animate-bounce" style={{ animationDuration: '3s' }}>
+              <div className="bg-indigo-500/20 p-2 rounded-lg text-indigo-400">
+                <Zap className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-white font-semibold text-sm">Webhook Dispatched</p>
+                <p className="text-gray-400 text-xs">CRM synchronized successfully.</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="order-1 lg:order-2"
+          >
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
+              Instant Sync with <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-orange-400">Webhooks</span>
+            </h2>
+            <p className="text-lg md:text-xl text-gray-400 mb-8 leading-relaxed">
+              Built for modern financial stacks. Our event-driven architecture uses BullMQ and Server-Sent Events (SSE) to push updates instantly to your dashboard and external CRMs.
+            </p>
+            <div className="space-y-6">
+              <div className="flex">
+                <div className="flex-shrink-0 mt-1">
+                  <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                    <Code className="h-5 w-5 text-indigo-400" />
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h4 className="text-lg font-bold text-white mb-1">Developer First API</h4>
+                  <p className="text-gray-400">Register endpoints directly from the dashboard and receive HMAC SHA-256 signed JSON payloads.</p>
+                </div>
+              </div>
+              <div className="flex">
+                <div className="flex-shrink-0 mt-1">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
+                    <Zap className="h-5 w-5 text-purple-400" />
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h4 className="text-lg font-bold text-white mb-1">Server-Sent Events</h4>
+                  <p className="text-gray-400">Admins see updates the millisecond they happen, with zero page refreshes required.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 3. Bank-Grade Architecture */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-white/5 bg-gray-900/50">
+        <div className="max-w-7xl mx-auto text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
+              Decoupled <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Architecture</span>
+            </h2>
+            <p className="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto">
+              Our system is engineered for scale and resilience. Background tasks are offloaded to Redis workers, and large documents bypass our servers entirely via S3 pre-signed URLs.
+            </p>
+          </motion.div>
+        </div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="max-w-5xl mx-auto glass border border-white/10 p-4 sm:p-8 rounded-3xl relative shadow-2xl"
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-transparent rounded-3xl pointer-events-none" />
+          <img 
+            src="/creditpulse_system_architecture.png" 
+            alt="System Architecture Diagram" 
+            className="w-full h-auto rounded-xl shadow-inner border border-white/5 opacity-90 hover:opacity-100 transition-opacity"
+          />
+        </motion.div>
+        
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 mt-32">
+          {[
+            { icon: Cloud, title: "Direct S3 Uploads", desc: "No server bottlenecks. Clients upload documents straight to AWS S3 using secure, short-lived signed URLs." },
+            { icon: Database, title: "Redis Backed Queues", desc: "Heavy operations like scoring and webhook dispatch are queued in BullMQ to keep the main API thread ultra-fast." },
+            { icon: Server, title: "Containerized Micro-services", desc: "API, Workers, and Redis run in isolated Docker containers, reducing IPC latency to <1ms." }
+          ].map((feature, idx) => (
+            <motion.div 
+              key={idx}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+              className="text-center"
+            >
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-lg">
+                <feature.icon className="h-8 w-8 text-blue-400" />
+              </div>
+              <h4 className="text-xl font-bold text-white mb-3">{feature.title}</h4>
+              <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* 4. CTA */}
+      <section className="pt-24 pb-32 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-white/5 text-center">
+        <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/20 to-transparent pointer-events-none" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="max-w-3xl mx-auto"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Transform Your Workflow?</h2>
+          <p className="text-lg md:text-xl text-gray-400 mb-10">
+            Experience the future of loan origination. Apply for a loan as a user, or explore the underwriter portal as an admin.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+            <Link
+              to="/register"
+              className="w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-indigo-500/25 transition-all flex items-center justify-center"
+            >
+              Start Application
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link
+              to="/login"
+              className="w-full sm:w-auto glass border border-white/10 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/5 transition-all flex items-center justify-center"
+            >
+              Admin Login
+            </Link>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/5 bg-[#0a0a0f] py-12 px-4 sm:px-6 lg:px-8 text-center relative z-10 mt-auto">
+        <div className="flex justify-center items-center space-x-2 mb-4">
+          <Zap className="h-5 w-5 text-indigo-500" />
+          <span className="text-lg font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
+            CreditPulse
+          </span>
+        </div>
+        <p className="text-gray-600 text-sm">
+          © {new Date().getFullYear()} CreditPulse. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 };
