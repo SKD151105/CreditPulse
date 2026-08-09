@@ -35,7 +35,10 @@ export function WebhookManager() {
   }, []);
 
   useEffect(() => {
-    fetchWebhooks();
+    const timer = setTimeout(() => {
+      fetchWebhooks();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchWebhooks]);
 
   const handleToggle = async (id: string) => {
