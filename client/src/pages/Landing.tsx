@@ -55,7 +55,7 @@ export const Landing = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className="text-6xl md:text-8xl font-extrabold tracking-tighter mb-8 max-w-5xl leading-tight"
+          className="text-5xl sm:text-6xl md:text-8xl font-extrabold tracking-tighter mb-8 max-w-5xl leading-tight"
         >
           The Future of <br className="hidden md:block" />
           <span className="bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">

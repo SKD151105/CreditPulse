@@ -217,27 +217,27 @@ export default function AdminDashboard() {
 
         {activeTab === 'applications' ? (
           <>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-              <div className="flex gap-4 w-full overflow-x-auto pb-2 md:pb-0">
-                <div className="glass border border-white/10 rounded-xl px-6 py-3 flex items-center min-w-[200px]">
-              <Activity className="h-5 w-5 text-indigo-400 mr-3" />
+            <div className="flex justify-between items-start md:items-center mb-10 gap-4">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full pb-2 md:pb-0">
+                <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
+              <Activity className="h-5 w-5 text-indigo-400 mb-1 sm:mb-0 sm:mr-3" />
               <div>
-                <p className="text-xs text-gray-400">Pending Review</p>
-                <p className="text-xl font-bold">{totalPending}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400">Pending</p>
+                <p className="text-lg sm:text-xl font-bold">{totalPending}</p>
               </div>
             </div>
-            <div className="glass border border-white/10 rounded-xl px-6 py-3 flex items-center">
-              <CheckCircle className="h-5 w-5 text-emerald-400 mr-3" />
+            <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
+              <CheckCircle className="h-5 w-5 text-emerald-400 mb-1 sm:mb-0 sm:mr-3" />
               <div>
-                <p className="text-xs text-gray-400">Approved</p>
-                <p className="text-xl font-bold">{totalApproved}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400">Approved</p>
+                <p className="text-lg sm:text-xl font-bold">{totalApproved}</p>
               </div>
             </div>
-            <div className="glass border border-white/10 rounded-xl px-6 py-3 flex items-center">
-              <XCircle className="h-5 w-5 text-red-400 mr-3" />
+            <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
+              <XCircle className="h-5 w-5 text-red-400 mb-1 sm:mb-0 sm:mr-3" />
               <div>
-                <p className="text-xs text-gray-400">Rejected</p>
-                <p className="text-xl font-bold">{totalRejected}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400">Rejected</p>
+                <p className="text-lg sm:text-xl font-bold">{totalRejected}</p>
               </div>
             </div>
           </div>
