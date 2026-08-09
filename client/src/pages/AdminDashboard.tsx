@@ -92,15 +92,21 @@ export default function AdminDashboard() {
   const [totalPages, setTotalPages] = useState(1);
   const [activeTab, setActiveTab] = useState<'applications' | 'webhooks'>('applications');
 
-  const refetchLoans = useCallback(async (currentPage: number) => {
+  const [statusFilter, setStatusFilter] = useState('');
+
+  const refetchLoans = useCallback(async (currentPage: number, currentStatusFilter: string = statusFilter) => {
     try {
-      const response = await axiosInstance.get(`/admin/loans?page=${currentPage}&limit=6`);
+      let url = `/admin/loans?page=${currentPage}&limit=6`;
+      if (currentStatusFilter) {
+        url += `&status=${currentStatusFilter}`;
+      }
+      const response = await axiosInstance.get(url);
       setLoans(response.data.data.loans);
       setTotalPages(response.data.data.pagination.pages || 1);
     } catch (error) {
       console.error('Failed to fetch loans:', error);
     }
-  }, []);
+  }, [statusFilter]);
 
   useEffect(() => {
     let isMounted = true;
@@ -111,7 +117,12 @@ export default function AdminDashboard() {
       if (!isMounted) return;
       setLoading(true);
       
-      axiosInstance.get(`/admin/loans?page=${page}&limit=6`)
+      let url = `/admin/loans?page=${page}&limit=6`;
+      if (statusFilter) {
+        url += `&status=${statusFilter}`;
+      }
+
+      axiosInstance.get(url)
         .then(response => {
           if (isMounted) {
             setLoans(response.data.data.loans);
@@ -130,7 +141,7 @@ export default function AdminDashboard() {
       isMounted = false; 
       clearTimeout(timer);
     };
-  }, [page]);
+  }, [page, statusFilter]);
 
   const handleAssign = async (loanId: string) => {
     try {
@@ -217,31 +228,48 @@ export default function AdminDashboard() {
 
         {activeTab === 'applications' ? (
           <>
-            <div className="flex justify-between items-start md:items-center mb-10 gap-4">
-              <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full pb-2 md:pb-0">
+            <div className="flex justify-between items-start md:items-center mb-10 gap-4 flex-col lg:flex-row">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full lg:w-auto pb-2 md:pb-0">
                 <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
-              <Activity className="h-5 w-5 text-indigo-400 mb-1 sm:mb-0 sm:mr-3" />
-              <div>
-                <p className="text-[10px] sm:text-xs text-gray-400">Pending</p>
-                <p className="text-lg sm:text-xl font-bold">{totalPending}</p>
+                  <Activity className="h-5 w-5 text-indigo-400 mb-1 sm:mb-0 sm:mr-3" />
+                  <div>
+                    <p className="text-[10px] sm:text-xs text-gray-400">Pending</p>
+                    <p className="text-lg sm:text-xl font-bold">{totalPending}</p>
+                  </div>
+                </div>
+                <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
+                  <CheckCircle className="h-5 w-5 text-emerald-400 mb-1 sm:mb-0 sm:mr-3" />
+                  <div>
+                    <p className="text-[10px] sm:text-xs text-gray-400">Approved</p>
+                    <p className="text-lg sm:text-xl font-bold">{totalApproved}</p>
+                  </div>
+                </div>
+                <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
+                  <XCircle className="h-5 w-5 text-red-400 mb-1 sm:mb-0 sm:mr-3" />
+                  <div>
+                    <p className="text-[10px] sm:text-xs text-gray-400">Rejected</p>
+                    <p className="text-lg sm:text-xl font-bold">{totalRejected}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="w-full lg:w-48">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                >
+                  <option value="">All Applications</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="under_review">Under Review</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
               </div>
             </div>
-            <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
-              <CheckCircle className="h-5 w-5 text-emerald-400 mb-1 sm:mb-0 sm:mr-3" />
-              <div>
-                <p className="text-[10px] sm:text-xs text-gray-400">Approved</p>
-                <p className="text-lg sm:text-xl font-bold">{totalApproved}</p>
-              </div>
-            </div>
-            <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
-              <XCircle className="h-5 w-5 text-red-400 mb-1 sm:mb-0 sm:mr-3" />
-              <div>
-                <p className="text-[10px] sm:text-xs text-gray-400">Rejected</p>
-                <p className="text-lg sm:text-xl font-bold">{totalRejected}</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Data Grid */}
         {loans.length === 0 ? (
