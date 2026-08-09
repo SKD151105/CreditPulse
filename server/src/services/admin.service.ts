@@ -10,32 +10,38 @@ import logger from '../utils/logger';
 
 export class AdminService {
   static async getAllLoans(adminEmail: string, page: number, limit: number, status?: string) {
-    const query: any = {};
+    const demoUsers = await User.find({ email: /@demo\.com$/ }).select('_id');
+    const demoUserIds = demoUsers.map(u => u._id);
+
+    const baseQuery: any = {};
+    if (adminEmail === 'admin@demo.com') {
+      baseQuery.applicantId = { $in: demoUserIds };
+    } else {
+      baseQuery.applicantId = { $nin: demoUserIds };
+    }
+
+    const query = { ...baseQuery };
     if (status) {
       query.status = status;
     }
 
-    const demoUsers = await User.find({ email: /@demo\.com$/ }).select('_id');
-    const demoUserIds = demoUsers.map(u => u._id);
-
-    if (adminEmail === 'admin@demo.com') {
-      query.applicantId = { $in: demoUserIds };
-    } else {
-      query.applicantId = { $nin: demoUserIds };
-    }
-
     const skip = (page - 1) * limit;
 
-    const loans = await LoanApplication.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    const total = await LoanApplication.countDocuments(query);
+    const [loans, total, pendingCount, approvedCount, rejectedCount] = await Promise.all([
+      LoanApplication.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      LoanApplication.countDocuments(query),
+      LoanApplication.countDocuments({ ...baseQuery, status: { $in: ['submitted', 'under_review'] } }),
+      LoanApplication.countDocuments({ ...baseQuery, status: 'approved' }),
+      LoanApplication.countDocuments({ ...baseQuery, status: 'rejected' })
+    ]);
 
     return {
       loans,
+      stats: {
+        pending: pendingCount,
+        approved: approvedCount,
+        rejected: rejectedCount
+      },
       pagination: {
         total,
         page,

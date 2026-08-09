@@ -93,6 +93,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'applications' | 'webhooks'>('applications');
 
   const [statusFilter, setStatusFilter] = useState('');
+  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
 
   const refetchLoans = useCallback(async (currentPage: number, currentStatusFilter: string = statusFilter) => {
     try {
@@ -103,6 +104,9 @@ export default function AdminDashboard() {
       const response = await axiosInstance.get(url);
       setLoans(response.data.data.loans);
       setTotalPages(response.data.data.pagination.pages || 1);
+      if (response.data.data.stats) {
+        setStats(response.data.data.stats);
+      }
     } catch (error) {
       console.error('Failed to fetch loans:', error);
     }
@@ -127,6 +131,9 @@ export default function AdminDashboard() {
           if (isMounted) {
             setLoans(response.data.data.loans);
             setTotalPages(response.data.data.pagination.pages || 1);
+            if (response.data.data.stats) {
+              setStats(response.data.data.stats);
+            }
           }
         })
         .catch(error => {
@@ -191,10 +198,6 @@ export default function AdminDashboard() {
     );
   }
 
-  const totalPending = loans.filter(l => l.status === 'submitted' || l.status === 'under_review').length;
-  const totalApproved = loans.filter(l => l.status === 'approved').length;
-  const totalRejected = loans.filter(l => l.status === 'rejected').length;
-
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-[#0a0a0a] text-white">
       <div className="max-w-7xl mx-auto">
@@ -234,21 +237,21 @@ export default function AdminDashboard() {
                   <Activity className="h-5 w-5 text-indigo-400 mb-1 sm:mb-0 sm:mr-3" />
                   <div>
                     <p className="text-[10px] sm:text-xs text-gray-400">Pending</p>
-                    <p className="text-lg sm:text-xl font-bold">{totalPending}</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.pending}</p>
                   </div>
                 </div>
                 <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
                   <CheckCircle className="h-5 w-5 text-emerald-400 mb-1 sm:mb-0 sm:mr-3" />
                   <div>
                     <p className="text-[10px] sm:text-xs text-gray-400">Approved</p>
-                    <p className="text-lg sm:text-xl font-bold">{totalApproved}</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.approved}</p>
                   </div>
                 </div>
                 <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
                   <XCircle className="h-5 w-5 text-red-400 mb-1 sm:mb-0 sm:mr-3" />
                   <div>
                     <p className="text-[10px] sm:text-xs text-gray-400">Rejected</p>
-                    <p className="text-lg sm:text-xl font-bold">{totalRejected}</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.rejected}</p>
                   </div>
                 </div>
               </div>
@@ -263,6 +266,7 @@ export default function AdminDashboard() {
                   className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
                 >
                   <option value="">All Applications</option>
+                  <option value="submitted">Pending</option>
                   <option value="under_review">Under Review</option>
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
