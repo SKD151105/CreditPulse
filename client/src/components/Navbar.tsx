@@ -1,11 +1,12 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, Zap } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const isDashboard = location.pathname === '/admin' || location.pathname === '/dashboard';
   return (
     <nav className="fixed w-full z-50 backdrop-blur-md bg-gray-900/80 border-b border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,12 +45,14 @@ export const Navbar = () => {
                   </span>
                 </div>
                 
-                <Link
-                  to={user.role === 'admin' ? '/admin' : '/dashboard'}
-                  className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
-                >
-                  Dashboard
-                </Link>
+                {!isDashboard && (
+                  <Link
+                    to={user.role === 'admin' ? '/admin' : '/dashboard'}
+                    className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                )}
 
                 <button
                   onClick={() => {
