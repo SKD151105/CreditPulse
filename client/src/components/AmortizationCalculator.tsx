@@ -48,7 +48,7 @@ export default function AmortizationCalculator({ initialAmount = 100000, initial
   const principalPercentage = totalPayable > 0 ? (amount / totalPayable) * 100 : 100;
   
   return (
-    <div className="glass border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl p-8 sticky top-24">
+    <div className="glass border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl p-4 sm:p-8 lg:sticky top-24">
       <div className="flex items-center mb-8 text-indigo-400">
         <Calculator className="h-6 w-6 mr-3" />
         <h2 className="text-2xl font-bold text-white">EMI Estimator</h2>
@@ -132,7 +132,7 @@ export default function AmortizationCalculator({ initialAmount = 100000, initial
       </div>
 
       {/* Donut Chart via Conic Gradient */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-0">
         <div className="relative h-24 w-24">
           <div 
             className="absolute inset-0 rounded-full"

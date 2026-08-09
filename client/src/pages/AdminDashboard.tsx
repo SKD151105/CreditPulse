@@ -195,10 +195,10 @@ export default function AdminDashboard() {
             <p className="text-gray-400">Review, assign, and process credit applications.</p>
           </div>
           
-          <div className="flex bg-white/5 border border-white/10 rounded-xl p-1">
+          <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 w-full md:w-auto overflow-x-auto">
             <button
               onClick={() => setActiveTab('applications')}
-              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+              className={`px-4 sm:px-6 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex-1 md:flex-none ${
                 activeTab === 'applications' ? 'bg-indigo-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveTab('webhooks')}
-              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+              className={`px-4 sm:px-6 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex-1 md:flex-none ${
                 activeTab === 'webhooks' ? 'bg-indigo-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -393,7 +393,7 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
                 <div className="glass p-4 rounded-xl border border-white/5">
                   <p className="text-xs text-gray-500 mb-1">Applicant Name</p>
                   <p className="font-semibold truncate" title={selectedLoan.fullName}>{selectedLoan.fullName}</p>
@@ -510,7 +510,7 @@ export default function AdminDashboard() {
                     />
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       onClick={() => handleDecision(selectedLoan._id, 'approved')}
                       disabled={processing}

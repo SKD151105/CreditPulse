@@ -192,7 +192,7 @@ export function WebhookManager() {
                   </div>
                 </div>
 
-                <div className="flex md:flex-col justify-between items-end min-w-[140px] pl-4 md:border-l border-white/10">
+                <div className="flex flex-row md:flex-col justify-between items-center md:items-end min-w-[140px] pt-4 md:pt-0 mt-4 md:mt-0 border-t md:border-t-0 md:border-l border-white/10 md:pl-4 gap-4 md:gap-0">
                   <button
                     onClick={() => handleToggle(wh._id)}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors w-full ${
@@ -204,7 +204,7 @@ export function WebhookManager() {
                     {wh.isActive ? 'Disable' : 'Enable'}
                   </button>
                   
-                  <div className="text-right text-xs mt-4">
+                  <div className="text-right text-xs md:mt-4">
                     {wh.failureCount > 0 && (
                       <p className="text-red-400 flex items-center justify-end mb-1">
                         <AlertCircle className="h-3 w-3 mr-1" /> {wh.failureCount} Failures
