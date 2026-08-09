@@ -263,7 +263,6 @@ export default function AdminDashboard() {
                   className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
                 >
                   <option value="">All Applications</option>
-                  <option value="submitted">Submitted</option>
                   <option value="under_review">Under Review</option>
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
