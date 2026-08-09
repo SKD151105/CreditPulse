@@ -9,10 +9,16 @@ import AuditLog from '../models/AuditLog';
 import logger from '../utils/logger';
 
 export class AdminService {
-  static async getAllLoans(page: number, limit: number, status?: string) {
+  static async getAllLoans(adminEmail: string, page: number, limit: number, status?: string) {
     const query: any = {};
     if (status) {
       query.status = status;
+    }
+
+    if (adminEmail === 'admin@demo.com') {
+      const demoUsers = await User.find({ email: /@demo\.com$/ }).select('_id');
+      const demoUserIds = demoUsers.map(u => u._id);
+      query.applicantId = { $in: demoUserIds };
     }
 
     const skip = (page - 1) * limit;

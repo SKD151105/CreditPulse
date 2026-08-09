@@ -7,8 +7,9 @@ export class AdminController {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const status = req.query.status as string;
+      const adminEmail = req.user!.email;
 
-      const result = await AdminService.getAllLoans(page, limit, status);
+      const result = await AdminService.getAllLoans(adminEmail, page, limit, status);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);
