@@ -15,10 +15,13 @@ export class AdminService {
       query.status = status;
     }
 
+    const demoUsers = await User.find({ email: /@demo\.com$/ }).select('_id');
+    const demoUserIds = demoUsers.map(u => u._id);
+
     if (adminEmail === 'admin@demo.com') {
-      const demoUsers = await User.find({ email: /@demo\.com$/ }).select('_id');
-      const demoUserIds = demoUsers.map(u => u._id);
       query.applicantId = { $in: demoUserIds };
+    } else {
+      query.applicantId = { $nin: demoUserIds };
     }
 
     const skip = (page - 1) * limit;
