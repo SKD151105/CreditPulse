@@ -217,7 +217,7 @@ export const Register = () => {
         </p>
 
         <div className="mt-8 pt-6 border-t border-gray-800">
-          <p className="text-center text-gray-400 text-sm mb-4 font-medium">Demo Access for Recruiters</p>
+          <p className="text-center text-gray-400 text-sm mb-4 font-medium">Demo Access for Trial</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => handleDemoLogin({ email: 'admin@demo.com', password: 'password123' })}
