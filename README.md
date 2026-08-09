@@ -7,7 +7,7 @@
   <img src="https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Docker.svg" width="48" height="48" alt="Docker" />
 
   <h1>CreditPulse</h1>
-  <p><strong>Loan Origination and Underwriting System</strong></p>
+  <p><strong>Enterprise Loan Origination and Underwriting System</strong></p>
 
   [![Live Demo](https://img.shields.io/badge/Demo-Live-brightgreen.svg?style=for-the-badge)](https://credit-pulse-xi.vercel.app/)
   [![Node.js](https://img.shields.io/badge/Node.js-Backend-43853D.svg?style=for-the-badge&logo=node.js&logoColor=white)](#)
@@ -18,49 +18,54 @@
 
 ---
 
-CreditPulse is a loan application and underwriting system designed around microservice principles. It provides secure applicant submission flows, automated risk scoring, and a real-time portal for underwriters to review and process applications.
+CreditPulse is a highly optimized, full-stack loan application and underwriting system designed around microservice principles. It provides secure applicant submission flows, automated risk scoring, and a real-time portal for underwriters to review and process applications.
 
 ## Table of Contents
 
-- [Architecture Overview](#architecture-overview)
+- [Architecture & Performance Overview](#architecture--performance-overview)
 - [Core Features](#core-features)
 - [System Flow](#system-flow)
 - [Technology Stack](#technology-stack)
 - [Local Environment Setup](#local-environment-setup)
+- [Database Seeding](#database-seeding)
 - [Configuration](#configuration)
 - [Deployment](#deployment)
 - [API Reference](#api-reference)
 
 ---
 
-## Architecture Overview
+## Architecture & Performance Overview
 
-The system architecture focuses on operational stability and fault tolerance under load:
+The system architecture focuses on operational stability, performance, and fault tolerance under load:
 
-### 1. Fail-Fast Caching and Rate Limiting
-The Node.js API relies on Redis for rate-limiting and short-lived caching. The Redis client is configured with `enableOfflineQueue: false` to ensure the application fails fast during cache outages. Rate limiters are designed to degrade gracefully, allowing core requests to process even if the memory-store connection drops, preventing event loop blocking.
+### 1. Database Indexing & Query Optimization
+MongoDB collections utilize Mongoose compound indexes (e.g., `{ status: 1, createdAt: -1 }`) to ensure lightning-fast querying on large datasets. Backend data fetching leverages `.lean()` queries to skip expensive document hydration, maximizing API response speeds.
 
-### 2. Event-Driven Background Processing
-Asynchronous tasks are managed via **BullMQ** on a containerized Redis instance to decouple heavy operations from the main API thread:
+### 2. Frontend Code Splitting
+The React frontend utilizes Route-Level Code Splitting via `React.lazy()` and `<Suspense>`. This ensures applicants do not download the heavy, complex JavaScript bundles required for the Admin Dashboard, strictly minimizing the initial load time and maximizing browser performance. Form validations are handled seamlessly via **React Hook Form** and **Zod** to prevent unnecessary re-renders.
+
+### 3. Event-Driven Background Processing
+Asynchronous tasks are managed via **BullMQ** on a containerized **Redis** instance to completely decouple heavy operations from the main API thread:
 - **Webhooks:** Outbound HTTP requests to external CRMs execute in the background with automatic retries and exponential backoff.
 - **Email Delivery:** Transactional notifications are queued and dispatched via Resend.
+- **Algorithmic Scoring:** The risk evaluation algorithm runs safely in the background.
 
-### 3. Stateless S3 Uploads
+### 4. Stateless S3 Uploads
 Large file uploads (e.g., identity documents, pay slips) are handled client-side via S3 Pre-Signed URLs. The Node.js backend computes a cryptographic signature (HMAC SHA-256) and returns a temporary URL. The client executes a direct `PUT` to the AWS S3 bucket, preventing the API servers from buffering large binary payloads.
 
-### 4. Containerized IPC
-Redis runs as a containerized instance alongside the Node.js API and Worker containers on the same Docker bridge network. This reduces inter-process communication (IPC) latency to <1ms compared to external managed caches.
+### 5. Fail-Fast Caching and Rate Limiting
+The Node.js API relies on Redis for rate-limiting and short-lived caching. The Redis client is configured with `enableOfflineQueue: false` to ensure the application fails fast during cache outages, degrading gracefully without blocking the event loop.
 
 ---
 
 ## Core Features
 
-- **Role-Based Access Control (RBAC):** Strict permission boundaries between Applicants and Admins.
-- **Audit Logging:** Logs state changes (creations, assignments, status updates) to a dedicated collection, rendered as a chronological Activity Timeline in the administrative portal.
-- **Risk Scoring Engine:** Evaluates income-to-loan ratios, employment stability, and document completeness to generate automated risk profiles.
-- **Authentication:** Utilizes short-lived JWT access tokens, HTTP-only refresh tokens, and Google OAuth 2.0.
-- **Real-Time Notifications:** Admin actions trigger background jobs that push updates to the applicant's browser via Server-Sent Events (SSE).
+- **Role-Based Access Control (RBAC):** Strict permission boundaries between Applicants and Admins. Protected routes ensure secure API access and strict isolation (e.g., Demo Admins can only view Demo Applications).
+- **Audit Logging & Activity Timeline:** Every state change (creations, assignments, status updates) is securely tracked in an `AuditLog` collection. This data is rendered as a beautiful, chronological Activity Timeline in the administrative portal.
+- **Real-Time Notifications (SSE):** Admin actions trigger background jobs that push live updates to the applicant's browser via Server-Sent Events, removing the need for network-heavy polling.
+- **Risk Scoring Engine:** Automatically evaluates income-to-loan ratios, employment stability, and document completeness to generate standardized risk profiles.
 - **Webhooks (HMAC Verified):** Allows administrators to register external endpoints for real-time JSON payloads on loan status changes, authenticated via `x-creditpulse-signature`.
+- **Authentication:** Highly secure utilizing short-lived JWT access tokens, HTTP-only refresh tokens, and seamless Google OAuth 2.0 integration.
 
 ---
 
@@ -74,14 +79,14 @@ Redis runs as a containerized instance alongside the Node.js API and Worker cont
 
 | Component          | Technology               | Description                                              |
 | :----------------- | :----------------------- | :------------------------------------------------------- |
-| **Frontend**       | React, Vite, TailwindCSS | Client-side application bundle.                          |
+| **Frontend**       | React, Vite, TailwindCSS | High-performance, code-split client application bundle.  |
+| **Form/State**     | React Hook Form, Zod     | Uncontrolled inputs and strict schema validation.        |
 | **Backend**        | Node.js, Express         | REST API and WebSocket/SSE provider.                     |
 | **Language**       | TypeScript               | Strict typing across the stack.                          |
-| **Database**       | MongoDB Atlas            | Primary operational datastore.                           |
-| **Message Broker** | Redis, BullMQ            | Job queuing and rate limiting.                           |
-| **Object Storage** | AWS S3                   | Secure storage for applicant documents.                  |
+| **Database**       | MongoDB Atlas            | Primary operational datastore with compound indexes.     |
+| **Message Broker** | Redis, BullMQ            | Job queuing, rate limiting, and background workers.      |
+| **Object Storage** | AWS S3                   | Secure storage for applicant documents via Presigned URLs|
 | **Email Service**  | Resend                   | Transactional email provider.                            |
-| **Infrastructure** | Docker, AWS EC2, Vercel  | Containerized backend services and edge-cached frontend. |
 
 ---
 
@@ -119,6 +124,25 @@ docker compose up -d
 cd ../client
 npm run dev
 ```
+
+---
+
+## Database Seeding
+
+To quickly populate your local or remote database with realistic demonstration data, you can utilize the included highly-safe database seed script. 
+
+The script will:
+- Safely drop **only** data associated with `@demo.com` users (protecting all real users in your database).
+- Generate a Demo Admin and two Demo Applicants.
+- Generate exactly **12 Loan Applications** with varying statuses (Submitted, Under Review, Approved, Rejected).
+- Generate **45 comprehensive Audit Logs** to fully populate the Activity Timeline UI with realistic dates and remarks.
+
+**To run the seed script:**
+```bash
+cd server
+npm run seed
+```
+*Note: If you run this script while logged into the frontend, simply log out and log back in to refresh your JWT session token with the newly generated Demo Admin ID.*
 
 ---
 
@@ -198,4 +222,4 @@ Continuous Integration and Deployment are managed via GitHub Actions (`.github/w
 
 ## License
 
-Licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License
