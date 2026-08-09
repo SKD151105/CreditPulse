@@ -17,14 +17,21 @@ const getActionIcon = (action: string, body?: Record<string, unknown> | null) =>
     case 'CREATE_LOAN': return <FileText className="h-4 w-4 text-gray-400" />;
     case 'SUBMIT_LOAN': return <Upload className="h-4 w-4 text-blue-400" />;
     case 'ASSIGN_LOAN': return <UserPlus className="h-4 w-4 text-indigo-400" />;
-    case 'UPDATE_LOAN_STATUS': return body?.status === 'rejected' ? <XCircle className="h-4 w-4 text-red-400" /> : <CheckCircle className="h-4 w-4 text-emerald-400" />;
+    case 'UPDATE_LOAN_STATUS':
+      if (body?.status === 'rejected') return <XCircle className="h-4 w-4 text-red-400" />;
+      if (body?.status === 'approved') return <CheckCircle className="h-4 w-4 text-emerald-400" />;
+      if (body?.status === 'under_review') return <Activity className="h-4 w-4 text-yellow-400" />;
+      return <Activity className="h-4 w-4 text-gray-400" />;
     default: return <Activity className="h-4 w-4 text-gray-400" />;
   }
 };
 
 const getActionColor = (action: string, body?: Record<string, unknown> | null) => {
-  if (action === 'UPDATE_LOAN_STATUS' && body?.status === 'rejected') return 'bg-red-500/20 text-red-400 border-red-500/30';
-  if (action === 'UPDATE_LOAN_STATUS' && body?.status === 'approved') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+  if (action === 'UPDATE_LOAN_STATUS') {
+    if (body?.status === 'rejected') return 'bg-red-500/20 text-red-400 border-red-500/30';
+    if (body?.status === 'approved') return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+    if (body?.status === 'under_review') return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+  }
   if (action === 'SUBMIT_LOAN') return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
   if (action === 'ASSIGN_LOAN') return 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30';
   return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
@@ -35,7 +42,11 @@ const getActionLabel = (action: string, body?: Record<string, unknown> | null) =
     case 'CREATE_LOAN': return 'Draft Created';
     case 'SUBMIT_LOAN': return 'Application Submitted';
     case 'ASSIGN_LOAN': return 'Assigned to Underwriter';
-    case 'UPDATE_LOAN_STATUS': return body?.status === 'approved' ? 'Application Approved' : 'Application Rejected';
+    case 'UPDATE_LOAN_STATUS':
+      if (body?.status === 'approved') return 'Application Approved';
+      if (body?.status === 'rejected') return 'Application Rejected';
+      if (body?.status === 'under_review') return 'Under Review';
+      return 'Status Updated';
     default: return action;
   }
 };
