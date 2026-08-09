@@ -355,22 +355,7 @@ export const Landing = () => {
           </motion.div>
         </div>
         
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="max-w-5xl mx-auto glass border border-white/10 p-4 sm:p-8 rounded-3xl relative shadow-2xl"
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-transparent rounded-3xl pointer-events-none" />
-          <img 
-            src="/creditpulse_system_architecture.png" 
-            alt="System Architecture Diagram" 
-            className="w-full h-auto rounded-xl shadow-inner border border-white/5 opacity-90 hover:opacity-100 transition-opacity"
-          />
-        </motion.div>
-        
-        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 mt-32">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 mt-20 mb-24">
           {[
             { icon: Cloud, title: "Direct S3 Uploads", desc: "No server bottlenecks. Clients upload documents straight to AWS S3 using secure, short-lived signed URLs." },
             { icon: Database, title: "Redis Backed Queues", desc: "Heavy operations like scoring and webhook dispatch are queued in BullMQ to keep the main API thread ultra-fast." },
@@ -382,27 +367,45 @@ export const Landing = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="text-center"
+              className="text-left bg-white/[0.02] border border-white/10 rounded-3xl p-10 hover:bg-white/[0.04] transition-colors"
             >
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-lg">
-                <feature.icon className="h-8 w-8 text-blue-400" />
+              <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-lg">
+                <feature.icon className="h-7 w-7 text-blue-400" />
               </div>
               <h4 className="text-xl font-bold text-white mb-3">{feature.title}</h4>
               <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
             </motion.div>
           ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="max-w-6xl mx-auto relative flex justify-center"
+        >
+          <img 
+            src="/creditpulse_social_preview.png" 
+            alt="System Architecture Diagram" 
+            className="w-full h-auto drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500"
+          />
+        </motion.div>
       </section>
 
       {/* 4. CTA */}
-      <section className="pt-24 pb-32 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-white/5 text-center">
+      <section className="pt-24 pb-32 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-white/5 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/20 to-transparent pointer-events-none" />
+        
+        {/* Massive glowing aura */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-r from-blue-600/20 to-purple-600/30 blur-[120px] pointer-events-none rounded-full" />
+        
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-3xl mx-auto"
+          className="max-w-3xl mx-auto relative"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Transform Your Workflow?</h2>
           <p className="text-lg md:text-xl text-gray-400 mb-10">
