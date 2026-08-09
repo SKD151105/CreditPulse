@@ -87,7 +87,7 @@ export function WebhookManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-4">
         <div>
           <h2 className="text-xl font-bold">Partner Webhooks</h2>
           <p className="text-sm text-gray-400">Configure endpoints to receive real-time loan updates.</p>

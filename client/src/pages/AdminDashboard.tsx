@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { CheckCircle, XCircle, UserPlus, Eye, X, Activity, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, UserPlus, Eye, X, Activity, AlertCircle, ChevronDown } from 'lucide-react';
 import axiosInstance from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -256,14 +256,14 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="w-full lg:w-48">
+              <div className="w-full lg:w-48 relative">
                 <select
                   value={statusFilter}
                   onChange={(e) => {
                     setStatusFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-indigo-500 cursor-pointer"
                 >
                   <option value="">All Applications</option>
                   <option value="submitted">Pending</option>
@@ -271,6 +271,7 @@ export default function AdminDashboard() {
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
                 </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
               </div>
             </div>
 
