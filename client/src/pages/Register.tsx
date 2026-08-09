@@ -62,6 +62,22 @@ export const Register = () => {
     }
   };
 
+  const handleDemoLogin = async (credentials: any) => {
+    setError('');
+    try {
+      const response = await axiosInstance.post('/auth/login', credentials);
+      const { accessToken, user } = response.data.data;
+      login(accessToken, user);
+      navigate(user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Failed to login as demo user');
+      } else {
+        setError('An unexpected error occurred during demo login');
+      }
+    }
+  };
+
   const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
     setError('');
     setIsGoogleLoading(true);
@@ -199,6 +215,28 @@ export const Register = () => {
             Log in
           </Link>
         </p>
+
+        <div className="mt-8 pt-6 border-t border-gray-800">
+          <p className="text-center text-gray-400 text-sm mb-4 font-medium">Demo Access for Recruiters</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => handleDemoLogin({ email: 'admin@demo.com', password: 'password123' })}
+              disabled={isSubmitting}
+              type="button"
+              className="flex-1 py-2 px-4 bg-indigo-500/10 border border-indigo-500/30 hover:bg-indigo-500/20 text-indigo-400 rounded-lg text-sm font-medium transition-colors"
+            >
+              Login as Demo Admin
+            </button>
+            <button
+              onClick={() => handleDemoLogin({ email: 'applicant1@demo.com', password: 'password123' })}
+              disabled={isSubmitting}
+              type="button"
+              className="flex-1 py-2 px-4 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-medium transition-colors"
+            >
+              Login as Demo Applicant
+            </button>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
