@@ -10,7 +10,7 @@ export class UserController {
       const userId = req.user?._id;
 
       if (!userId) {
-        throw new AppError(401, 'Unauthorized');
+        throw new AppError('Unauthorized', 401);
       }
 
       // Check if username is taken by another user
@@ -38,7 +38,7 @@ export class UserController {
       ).select('-password -refreshTokens');
 
       if (!updatedUser) {
-        throw new AppError(404, 'User not found');
+        throw new AppError('User not found', 404);
       }
 
       res.status(200).json({
