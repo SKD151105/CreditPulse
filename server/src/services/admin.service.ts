@@ -13,7 +13,7 @@ export class AdminService {
     const demoUsers = await User.find({ email: /@demo\.com$/ }).select('_id');
     const demoUserIds = demoUsers.map(u => u._id);
 
-    const baseQuery: any = {};
+    const baseQuery: any = { status: { $ne: 'draft' } };
     if (adminEmail === 'admin@demo.com') {
       baseQuery.applicantId = { $in: demoUserIds };
     } else {
@@ -22,7 +22,11 @@ export class AdminService {
 
     const query = { ...baseQuery };
     if (status) {
-      query.status = status;
+      if (status === 'pending') {
+        query.status = { $in: ['submitted', 'under_review'] };
+      } else {
+        query.status = status;
+      }
     }
 
     const skip = (page - 1) * limit;

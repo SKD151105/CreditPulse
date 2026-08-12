@@ -7,6 +7,10 @@ export interface User {
   email: string;
   role: 'applicant' | 'admin';
   name: string;
+  username?: string;
+  bio?: string;
+  avatar?: string;
+  createdAt?: string;
 }
 
 interface AuthContextType {
@@ -14,6 +18,7 @@ interface AuthContextType {
   token: string | null;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (user: User) => void;
   isLoading: boolean;
 }
 
@@ -28,6 +33,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('accessToken', newToken);
     setToken(newToken);
     setUser(newUser);
+  };
+
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
   };
 
   const logout = () => {
@@ -55,7 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [token]);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,6 @@
 import { OAuth2Client } from 'google-auth-library';
 import crypto from 'crypto';
+import axios from 'axios';
 import User, { IUser } from '../models/User';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { hashPassword, comparePassword } from '../utils/password';
@@ -78,6 +79,7 @@ export class AuthService {
       audience: env.GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload();
+    
     if (!payload || !payload.email || !payload.name || !payload.sub) {
       throw new UnauthorizedError('Invalid Google token');
     }

@@ -137,10 +137,11 @@ export default function AmortizationCalculator({ initialAmount = 100000, initial
           <div 
             className="absolute inset-0 rounded-full"
             style={{
-              background: `conic-gradient(#6366f1 ${principalPercentage}%, #10b981 ${principalPercentage}% 100%)`
+              background: `conic-gradient(#6366f1 ${principalPercentage}%, #10b981 ${principalPercentage}% 100%)`,
+              maskImage: 'radial-gradient(circle at center, transparent 55%, black 56%)',
+              WebkitMaskImage: 'radial-gradient(circle at center, transparent 55%, black 56%)'
             }}
           ></div>
-          <div className="absolute inset-2 bg-[#0f1115] rounded-full"></div>
         </div>
         <div className="space-y-3">
           <div className="flex items-center">

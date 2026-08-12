@@ -4,14 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../api/axios';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Briefcase, CreditCard, User, AlertCircle, Loader2, Upload, FileText, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 import AmortizationCalculator from '../components/AmortizationCalculator';
 
 const applicationSchema = z.object({
   loanType: z.enum(['personal', 'business', 'education', 'home'], {
-    required_error: "Please select a loan type"
+    errorMap: () => ({ message: 'Please select a loan type' })
   }),
   amount: z.coerce.number().min(10000, 'Minimum loan amount is 10,000').max(10000000),
   tenure: z.coerce.number().min(3, 'Minimum tenure is 3 months').max(360, 'Maximum tenure is 360 months'),
@@ -21,9 +21,11 @@ const applicationSchema = z.object({
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD'),
   panNumber: z.string().length(10, 'PAN must be exactly 10 characters').toUpperCase(),
   employmentType: z.enum(['salaried', 'self-employed', 'student'], {
-    required_error: "Please select employment type"
+    errorMap: () => ({ message: 'Please select an employment type' })
   }),
-  monthlyIncome: z.coerce.number().min(0, 'Income cannot be negative'),
+  monthlyIncome: z.coerce.number({
+    invalid_type_error: "Please enter a valid amount"
+  }).min(1, 'Monthly income is required'),
   fileUrls: z.array(z.string().url()).optional()
 });
 
@@ -42,22 +44,57 @@ export default function ApplicationForm() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleBack = () => {
-    if (window.confirm("Are you sure you want to discard your application? All unsaved progress will be lost.")) {
-      navigate('/dashboard');
-    }
-  };
-
   const {
     register,
     handleSubmit,
     setValue,
     control,
     reset,
+    getValues,
     formState: { errors },
   } = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationSchema),
   });
+
+  const [showExitModal, setShowExitModal] = useState(false);
+
+  useEffect(() => {
+    (window as any).__checkApplicationDirty = () => {
+      if (isSubmitting || isSavingDraft) return false;
+      const values = getValues();
+      return !!(
+        values.loanType || 
+        values.amount > 0 || 
+        values.tenure > 0 || 
+        values.purpose || 
+        values.fullName || 
+        values.phone || 
+        values.dateOfBirth || 
+        values.panNumber || 
+        values.employmentType || 
+        values.monthlyIncome > 0 || 
+        (values.fileUrls && values.fileUrls.length > 0)
+      );
+    };
+    return () => {
+      delete (window as any).__checkApplicationDirty;
+    };
+  }, [getValues, isSubmitting, isSavingDraft]);
+
+  useEffect(() => {
+    const handleShowModal = () => setShowExitModal(true);
+    window.addEventListener('requestExitModal', handleShowModal);
+    return () => window.removeEventListener('requestExitModal', handleShowModal);
+  }, []);
+
+  const handleBack = () => {
+    const isDirty = (window as any).__checkApplicationDirty?.();
+    if (isDirty) {
+      setShowExitModal(true);
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   useEffect(() => {
     if (editId) {
@@ -191,7 +228,7 @@ export default function ApplicationForm() {
     }
   };
 
-  const onSaveDraft = async (data: ApplicationFormValues) => {
+  const onSaveDraft = async (data: any) => {
     setIsSavingDraft(true);
     setError('');
     
@@ -200,23 +237,23 @@ export default function ApplicationForm() {
 
       if (!currentLoanId) {
         const draftRes = await axiosInstance.post('/loans', {
-          loanType: data.loanType,
-          amount: data.amount,
-          tenure: data.tenure,
-          purpose: data.purpose
+          ...(data.loanType ? { loanType: data.loanType } : {}),
+          ...(data.amount > 0 ? { amount: data.amount } : {}),
+          ...(data.tenure > 0 ? { tenure: data.tenure } : {}),
+          ...(data.purpose ? { purpose: data.purpose } : {})
         });
         currentLoanId = draftRes.data.data._id;
         setDraftId(currentLoanId);
       }
       
       await axiosInstance.patch(`/loans/${currentLoanId}`, {
-        fullName: data.fullName,
-        phone: data.phone,
-        dateOfBirth: data.dateOfBirth,
-        panNumber: data.panNumber,
-        employmentType: data.employmentType,
-        monthlyIncome: data.monthlyIncome,
-        fileUrls: data.fileUrls
+        ...(data.fullName ? { fullName: data.fullName } : {}),
+        ...(data.phone ? { phone: data.phone } : {}),
+        ...(data.dateOfBirth ? { dateOfBirth: data.dateOfBirth } : {}),
+        ...(data.panNumber ? { panNumber: data.panNumber } : {}),
+        ...(data.employmentType ? { employmentType: data.employmentType } : {}),
+        ...(data.monthlyIncome > 0 ? { monthlyIncome: data.monthlyIncome } : {}),
+        ...(data.fileUrls && data.fileUrls.length > 0 ? { fileUrls: data.fileUrls } : {})
       });
       
       navigate('/dashboard');
@@ -232,8 +269,11 @@ export default function ApplicationForm() {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-12 bg-[#0a0a0a] text-white px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
+    <div className="min-h-screen pt-24 pb-12 bg-[#101325] text-white px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Central Glowing Orb */}
+      <div className="fixed top-[60%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] bg-indigo-600/20 rounded-[100%] blur-[160px] pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto relative z-10 flex flex-col lg:flex-row gap-8 items-start">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -243,13 +283,13 @@ export default function ApplicationForm() {
           <button 
             type="button"
             onClick={handleBack}
-            className="mb-6 text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"
+            className="mb-6 text-gray-300 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Back to Dashboard</span>
           </button>
           <h1 className="text-3xl font-bold mb-2">Apply for a Loan</h1>
-          <p className="text-gray-400">Complete this application to receive an instant credit decision.</p>
+          <p className="text-gray-300">Complete this application to receive an instant credit decision.</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-12">
@@ -269,10 +309,10 @@ export default function ApplicationForm() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Loan Type</label>
+                <label className="block text-sm font-medium text-gray-100 mb-2">Loan Type</label>
                 <select 
                   {...register('loanType')}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
                 >
                   <option value="">Select type...</option>
                   <option value="personal">Personal</option>
@@ -284,38 +324,38 @@ export default function ApplicationForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Amount (₹)</label>
+                <label className="block text-sm font-medium text-gray-100 mb-2">Amount (₹)</label>
                 <input 
                   type="number"
                   placeholder="Min. 10000"
                   {...register('amount')}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
-                <p className="mt-1 text-xs text-gray-500">Minimum loan amount is ₹10,000</p>
+                <p className="mt-1 text-xs text-gray-300">Minimum loan amount is ₹10,000</p>
                 {errors.amount && <p className="mt-1 text-sm text-red-400">{errors.amount.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Tenure (Months)</label>
+                <label className="block text-sm font-medium text-gray-100 mb-2">Tenure (Months)</label>
                 <input 
                   type="number"
                   placeholder="e.g. 12"
                   {...register('tenure')}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
-                <p className="mt-1 text-xs text-gray-500">Between 3 and 360 months</p>
+                <p className="mt-1 text-xs text-gray-300">Between 3 and 360 months</p>
                 {errors.tenure && <p className="mt-1 text-sm text-red-400">{errors.tenure.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Purpose</label>
+                <label className="block text-sm font-medium text-gray-100 mb-2">Purpose</label>
                 <input 
                   type="text"
                   placeholder="e.g. Medical emergency"
                   {...register('purpose')}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
-                <p className="mt-1 text-xs text-gray-500">Provide a brief description (min. 10 characters)</p>
+                <p className="mt-1 text-xs text-gray-300">Provide a brief description (min. 10 characters)</p>
                 {errors.purpose && <p className="mt-1 text-sm text-red-400">{errors.purpose.message}</p>}
               </div>
             </div>
@@ -332,48 +372,48 @@ export default function ApplicationForm() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Full Name (As per PAN)</label>
+                <label className="block text-sm font-medium text-gray-100 mb-2">Full Name (As per PAN)</label>
                 <input 
                   type="text"
                   placeholder="John Doe"
                   {...register('fullName')}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
                 {errors.fullName && <p className="mt-1 text-sm text-red-400">{errors.fullName.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-100 mb-2">Phone Number</label>
                 <input 
                   type="tel"
                   placeholder="9876543210"
                   {...register('phone')}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
-                <p className="mt-1 text-xs text-gray-500">10-digit mobile number</p>
+                <p className="mt-1 text-xs text-gray-300">10-digit mobile number</p>
                 {errors.phone && <p className="mt-1 text-sm text-red-400">{errors.phone.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Date of Birth</label>
+                <label className="block text-sm font-medium text-gray-100 mb-2">Date of Birth</label>
                 <input 
                   type="date"
                   {...register('dateOfBirth')}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
-                <p className="mt-1 text-xs text-gray-500">Must be 18 years or older</p>
+                <p className="mt-1 text-xs text-gray-300">Must be 18 years or older</p>
                 {errors.dateOfBirth && <p className="mt-1 text-sm text-red-400">{errors.dateOfBirth.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">PAN Number</label>
+                <label className="block text-sm font-medium text-gray-100 mb-2">PAN Number</label>
                 <input 
                   type="text"
                   placeholder="ABCDE1234F"
                   {...register('panNumber')}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
                 />
-                <p className="mt-1 text-xs text-gray-500">Must be exactly 10 characters</p>
+                <p className="mt-1 text-xs text-gray-300">Must be exactly 10 characters</p>
                 {errors.panNumber && <p className="mt-1 text-sm text-red-400">{errors.panNumber.message}</p>}
               </div>
             </div>
@@ -390,10 +430,10 @@ export default function ApplicationForm() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Employment Type</label>
+                <label className="block text-sm font-medium text-gray-100 mb-2">Employment Type</label>
                 <select 
                   {...register('employmentType')}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
                 >
                   <option value="">Select type...</option>
                   <option value="salaried">Salaried</option>
@@ -404,12 +444,12 @@ export default function ApplicationForm() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Monthly Income (₹)</label>
+                <label className="block text-sm font-medium text-gray-100 mb-2">Monthly Income (₹)</label>
                 <input 
                   type="number"
                   placeholder="e.g. 50000"
                   {...register('monthlyIncome')}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
                 {errors.monthlyIncome && <p className="mt-1 text-sm text-red-400">{errors.monthlyIncome.message}</p>}
               </div>
@@ -425,7 +465,7 @@ export default function ApplicationForm() {
               <h2 className="text-xl font-semibold text-white">Supporting Documents</h2>
             </div>
             
-            <div className="bg-gray-800/30 border border-gray-700 border-dashed rounded-xl p-8 text-center transition-all hover:bg-gray-800/50">
+            <div className="bg-gray-800/30 border border-gray-500 border-dashed rounded-xl p-8 text-center transition-all hover:bg-white/5">
               {uploadingFile ? (
                 <div className="flex flex-col items-center justify-center">
                    <Loader2 className="h-8 w-8 text-indigo-500 animate-spin mb-4" />
@@ -433,7 +473,7 @@ export default function ApplicationForm() {
                    <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
                      <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
                    </div>
-                   <p className="text-xs text-gray-400 mt-2">{uploadProgress}% Complete</p>
+                   <p className="text-xs text-gray-300 mt-2">{uploadProgress}% Complete</p>
                 </div>
               ) : (
                 <div className="flex flex-col w-full">
@@ -444,10 +484,10 @@ export default function ApplicationForm() {
                         {fileUrls.map((url, idx) => {
                           const filename = url.split('/').pop()?.split('?')[0] || `Document ${idx + 1}`;
                           return (
-                            <div key={idx} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+                            <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-gray-500">
                               <div className="flex items-center space-x-3 overflow-hidden">
                                 <FileText className="h-5 w-5 text-emerald-400 flex-shrink-0" />
-                                <span className="text-sm text-gray-300 truncate" title={filename}>{filename}</span>
+                                <span className="text-sm text-gray-100 truncate" title={filename}>{filename}</span>
                               </div>
                               <button
                                 type="button"
@@ -463,12 +503,12 @@ export default function ApplicationForm() {
                     </div>
                   )}
                   
-                  <div className="flex flex-col items-center justify-center border-t border-dashed border-gray-700 pt-6 mt-2">
-                     <div className="h-16 w-16 bg-gray-800 text-gray-400 rounded-full flex items-center justify-center mb-4 cursor-pointer hover:text-white hover:bg-gray-700 transition-all" onClick={() => fileInputRef.current?.click()}>
+                  <div className="flex flex-col items-center justify-center border-t border-dashed border-gray-500 pt-6 mt-2">
+                     <div className="h-16 w-16 bg-gray-800 text-gray-300 rounded-full flex items-center justify-center mb-4 cursor-pointer hover:text-white hover:bg-gray-700 transition-all" onClick={() => fileInputRef.current?.click()}>
                        <Upload className="h-8 w-8" />
                      </div>
                      <p className="text-white font-medium mb-1">Click to upload more documents</p>
-                     <p className="text-sm text-gray-400">PDF, JPG, or PNG</p>
+                     <p className="text-sm text-gray-300">PDF, JPG, or PNG</p>
                      <input 
                        type="file" 
                        multiple
@@ -487,9 +527,9 @@ export default function ApplicationForm() {
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 type="button"
-                onClick={handleSubmit(onSaveDraft)}
+                onClick={() => onSaveDraft(getValues())}
                 disabled={isSubmitting || isSavingDraft}
-                className="w-full sm:w-1/3 py-4 bg-gray-800 text-white border border-gray-700 font-semibold rounded-lg hover:bg-gray-700 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-1/3 py-4 bg-gray-800 text-white border border-gray-500 font-semibold rounded-lg hover:bg-gray-700 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSavingDraft ? (
                   <Loader2 className="animate-spin h-5 w-5" />
@@ -512,7 +552,7 @@ export default function ApplicationForm() {
                 )}
               </button>
             </div>
-            <p className="text-center text-xs text-gray-500 mt-4">
+            <p className="text-center text-xs text-gray-300 mt-4">
               By submitting this application, you authorize CreditPulse to access your credit report and process your data.
             </p>
           </div>
@@ -531,6 +571,52 @@ export default function ApplicationForm() {
         />
       </motion.div>
       </div>
+
+      {/* Exit Confirmation Modal */}
+      <AnimatePresence>
+        {showExitModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-gray-800/80 backdrop-blur-xl border border-gray-700 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl relative"
+            >
+              <h2 className="text-xl font-bold text-white mb-2">Unsaved Progress</h2>
+              <p className="text-gray-300 text-sm mb-6">
+                You have unsaved changes in your application. Would you like to save a draft to continue later, or discard your progress?
+              </p>
+              
+              <div className="flex flex-col space-y-3">
+                <button
+                  onClick={() => {
+                    setShowExitModal(false);
+                    onSaveDraft(getValues());
+                  }}
+                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  Save Draft & Exit
+                </button>
+                <button
+                  onClick={() => {
+                    setShowExitModal(false);
+                    navigate('/dashboard');
+                  }}
+                  className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium rounded-lg transition-colors border border-red-500/20"
+                >
+                  Discard Progress
+                </button>
+                <button
+                  onClick={() => setShowExitModal(false)}
+                  className="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-lg transition-colors border border-white/5"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

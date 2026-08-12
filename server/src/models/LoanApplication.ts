@@ -157,11 +157,31 @@ const loanApplicationSchema = new Schema<ILoanApplication>(
     loanType: {
       type: String,
       enum: ['personal', 'business', 'education', 'home'],
-      required: true,
+      required: function(this: any) { return this.status !== 'draft'; },
     },
-    amount: { type: Number, required: true, min: 10000, max: 10000000 },
-    tenure: { type: Number, required: true, min: 3, max: 360 },
-    purpose: { type: String, required: true },
+    amount: { 
+      type: Number, 
+      required: function(this: any) { return this.status !== 'draft'; },
+      validate: {
+        validator: function(this: any, v: number) {
+          if (this.status === 'draft') return true;
+          return v != null && v >= 10000 && v <= 10000000;
+        },
+        message: 'Amount must be between 10,000 and 1,00,00,000'
+      }
+    },
+    tenure: { 
+      type: Number, 
+      required: function(this: any) { return this.status !== 'draft'; },
+      validate: {
+        validator: function(this: any, v: number) {
+          if (this.status === 'draft') return true;
+          return v != null && v >= 3 && v <= 360;
+        },
+        message: 'Tenure must be between 3 and 360 months'
+      }
+    },
+    purpose: { type: String, required: function(this: any) { return this.status !== 'draft'; } },
     interestRate: { type: Number },
     employmentType: {
       type: String,

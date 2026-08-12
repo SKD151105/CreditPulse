@@ -4,6 +4,8 @@ export interface IUser extends Document {
   email: string;
   password?: string;
   name: string;
+  username?: string;
+  bio?: string;
   role: 'applicant' | 'admin';
   googleId?: string;
   avatar?: string;
@@ -28,6 +30,15 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       trim: true,
+    },
+    username: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+    },
+    bio: {
+      type: String,
     },
     role: {
       type: String,

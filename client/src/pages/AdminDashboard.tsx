@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { CheckCircle, XCircle, UserPlus, Eye, X, Activity, AlertCircle, ChevronDown } from 'lucide-react';
 import axiosInstance from '../api/axios';
@@ -65,11 +65,11 @@ const getScoreColor = (score?: number) => {
 
 const getStatusColor = (status: Loan['status']) => {
   switch (status) {
-    case 'approved': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-    case 'rejected': return 'bg-red-500/20 text-red-400 border-red-500/30';
-    case 'under_review': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-    case 'submitted': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-    default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    case 'approved': return 'bg-emerald-500/40 text-emerald-300 border-emerald-500/50';
+    case 'rejected': return 'bg-red-500/40 text-red-300 border-red-500/50';
+    case 'under_review': return 'bg-amber-500/40 text-amber-300 border-amber-500/50';
+    case 'submitted': return 'bg-blue-500/40 text-blue-300 border-blue-500/50';
+    default: return 'bg-gray-500/40 text-gray-300 border-gray-500/50';
   }
 };
 
@@ -94,6 +94,18 @@ export default function AdminDashboard() {
 
   const [statusFilter, setStatusFilter] = useState('');
   const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const refetchLoans = useCallback(async (currentPage: number, currentStatusFilter: string = statusFilter) => {
     try {
@@ -119,7 +131,6 @@ export default function AdminDashboard() {
     // flag state updates inside useEffect as "synchronous with render"
     const timer = setTimeout(() => {
       if (!isMounted) return;
-      setLoading(true);
       
       let url = `/admin/loans?page=${page}&limit=6`;
       if (statusFilter) {
@@ -192,15 +203,18 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 flex items-center justify-center bg-[#0a0a0a]">
+      <div className="min-h-screen pt-24 flex items-center justify-center bg-[#101325]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-[#0a0a0a] text-white">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8 bg-[#101325] text-white relative overflow-hidden">
+      {/* Central Glowing Orb */}
+      <div className="fixed top-[60%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] bg-indigo-600/20 rounded-[100%] blur-[160px] pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
@@ -209,11 +223,11 @@ export default function AdminDashboard() {
             <p className="text-gray-400">Review, assign, and process credit applications.</p>
           </div>
           
-          <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 w-full md:w-auto overflow-x-auto">
+          <div className="flex bg-white/10 border border-white/20 rounded-xl p-1 w-full md:w-auto overflow-x-auto">
             <button
               onClick={() => setActiveTab('applications')}
               className={`px-4 sm:px-6 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex-1 md:flex-none ${
-                activeTab === 'applications' ? 'bg-indigo-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'
+                activeTab === 'applications' ? 'bg-indigo-500 text-white shadow-lg' : 'text-gray-300 hover:text-white'
               }`}
             >
               Applications
@@ -221,7 +235,7 @@ export default function AdminDashboard() {
             <button
               onClick={() => setActiveTab('webhooks')}
               className={`px-4 sm:px-6 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex-1 md:flex-none ${
-                activeTab === 'webhooks' ? 'bg-indigo-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'
+                activeTab === 'webhooks' ? 'bg-indigo-500 text-white shadow-lg' : 'text-gray-300 hover:text-white'
               }`}
             >
               Partner Webhooks
@@ -233,21 +247,30 @@ export default function AdminDashboard() {
           <>
             <div className="flex justify-between items-start md:items-center mb-10 gap-4 flex-col lg:flex-row">
               <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full lg:w-auto pb-2 md:pb-0">
-                <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
+                <div 
+                  onClick={() => { setStatusFilter('pending'); setPage(1); }}
+                  className={`glass border rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left cursor-pointer transition-all ${statusFilter === 'pending' ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/20' : 'border-white/10 hover:bg-white/5'}`}
+                >
                   <Activity className="h-5 w-5 text-indigo-400 mb-1 sm:mb-0 sm:mr-3" />
                   <div>
                     <p className="text-[10px] sm:text-xs text-gray-400">Pending</p>
                     <p className="text-lg sm:text-xl font-bold">{stats.pending}</p>
                   </div>
                 </div>
-                <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
+                <div 
+                  onClick={() => { setStatusFilter('approved'); setPage(1); }}
+                  className={`glass border rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left cursor-pointer transition-all ${statusFilter === 'approved' ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/20' : 'border-white/10 hover:bg-white/5'}`}
+                >
                   <CheckCircle className="h-5 w-5 text-emerald-400 mb-1 sm:mb-0 sm:mr-3" />
                   <div>
                     <p className="text-[10px] sm:text-xs text-gray-400">Approved</p>
                     <p className="text-lg sm:text-xl font-bold">{stats.approved}</p>
                   </div>
                 </div>
-                <div className="glass border border-white/10 rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left">
+                <div 
+                  onClick={() => { setStatusFilter('rejected'); setPage(1); }}
+                  className={`glass border rounded-xl px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center sm:items-center justify-center sm:justify-start text-center sm:text-left cursor-pointer transition-all ${statusFilter === 'rejected' ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/20' : 'border-white/10 hover:bg-white/5'}`}
+                >
                   <XCircle className="h-5 w-5 text-red-400 mb-1 sm:mb-0 sm:mr-3" />
                   <div>
                     <p className="text-[10px] sm:text-xs text-gray-400">Rejected</p>
@@ -256,22 +279,54 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="w-full lg:w-48 relative">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-indigo-500 cursor-pointer"
+              <div className="w-full lg:w-48 relative z-40" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none hover:bg-white/20 cursor-pointer flex justify-between items-center transition-all"
                 >
-                  <option value="">All Applications</option>
-                  <option value="submitted">Pending</option>
-                  <option value="under_review">Under Review</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                  <span className={statusFilter === '' ? 'text-white' : 'text-indigo-300'}>
+                    {statusFilter === '' && 'All Applications'}
+                    {statusFilter === 'pending' && 'Pending'}
+                    {statusFilter === 'submitted' && 'Unassigned'}
+                    {statusFilter === 'under_review' && 'Under Review'}
+                    {statusFilter === 'approved' && 'Approved'}
+                    {statusFilter === 'rejected' && 'Rejected'}
+                  </span>
+                  <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-0 mt-2 w-full bg-[#1e2343]/90 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden shadow-2xl p-1 flex flex-col gap-1"
+                    >
+                      {[
+                        { value: '', label: 'All Applications' },
+                        { value: 'submitted', label: 'Unassigned' },
+                        { value: 'under_review', label: 'Under Review' },
+                        { value: 'approved', label: 'Approved' },
+                        { value: 'rejected', label: 'Rejected' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${statusFilter === opt.value ? 'bg-indigo-500 text-white shadow-lg' : 'text-gray-300 hover:text-white hover:bg-white/20'}`}
+                          onClick={() => {
+                            setStatusFilter(opt.value);
+                            setPage(1);
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
@@ -293,7 +348,7 @@ export default function AdminDashboard() {
               <motion.div
                 key={loan._id}
                 variants={itemVariants}
-                className="glass border border-white/10 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-indigo-500/20 hover:border-indigo-500/30 hover:bg-surface flex flex-col relative overflow-hidden backdrop-blur-md"
+                className="glass border border-white/10 rounded-2xl p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_8px_30px_rgba(255,255,255,0.1)] hover:border-white/30 hover:bg-white/[0.13] flex flex-col relative overflow-hidden backdrop-blur-md"
               >
                 {/* Glowing edge for high risk/high score */}
                 {loan.creditScore && loan.creditScore < 50 && (
@@ -331,7 +386,7 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => handleAssign(loan._id)}
                       disabled={processing}
-                      className="w-full py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center border border-indigo-500/20 disabled:opacity-50"
+                      className="w-full py-2 bg-indigo-500/50 hover:bg-indigo-500/70 text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center border border-indigo-500/60 disabled:opacity-50"
                     >
                       <UserPlus className="h-4 w-4 mr-2" /> Assign to Me
                     </button>
@@ -347,7 +402,7 @@ export default function AdminDashboard() {
                   )}
 
                   {loan.status === 'under_review' && loan.assignedTo !== user?._id && (
-                    <div className="w-full py-2 bg-white/5 text-gray-500 rounded-lg text-sm font-semibold text-center border border-white/5">
+                    <div className="w-full py-2 bg-white/20 text-gray-200 rounded-lg text-sm font-semibold text-center border border-white/20">
                       Assigned to another Admin
                     </div>
                   )}
@@ -355,7 +410,7 @@ export default function AdminDashboard() {
                   {['approved', 'rejected', 'disbursed'].includes(loan.status) && (
                     <button
                       onClick={() => setSelectedLoan(loan)}
-                      className="w-full py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors rounded-lg text-sm font-semibold text-center border border-white/5 flex items-center justify-center cursor-pointer"
+                      className="w-full py-2 bg-white/20 hover:bg-white/30 text-white transition-colors rounded-lg text-sm font-semibold text-center border border-white/30 flex items-center justify-center cursor-pointer"
                     >
                       <Eye className="h-4 w-4 mr-2" /> View Details
                     </button>
@@ -372,7 +427,7 @@ export default function AdminDashboard() {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-white"
             >
               Previous
             </button>
@@ -382,7 +437,7 @@ export default function AdminDashboard() {
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-white"
             >
               Next
             </button>
@@ -398,7 +453,7 @@ export default function AdminDashboard() {
       <AnimatePresence>
         {selectedLoan && (
           <div 
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0c17]/60 backdrop-blur-md"
             onClick={() => {
               setSelectedLoan(null);
               setRemarks('');
@@ -410,7 +465,7 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#0f1115] border border-gray-800 rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative [&::-webkit-scrollbar]:hidden"
+              className="bg-[#151932]/90 backdrop-blur-3xl border border-white/20 rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-[0_0_30px_rgba(99,102,241,0.1)] relative [&::-webkit-scrollbar]:hidden"
               style={{ scrollbarWidth: 'none' }}
             >
               <button 
@@ -434,44 +489,44 @@ export default function AdminDashboard() {
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-                <div className="glass p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-gray-500 mb-1">Applicant Name</p>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <p className="text-xs text-gray-400 mb-1">Applicant Name</p>
                   <p className="font-semibold truncate" title={selectedLoan.fullName}>{selectedLoan.fullName}</p>
                 </div>
-                <div className="glass p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-gray-500 mb-1">Phone Number</p>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <p className="text-xs text-gray-400 mb-1">Phone Number</p>
                   <p className="font-semibold truncate">{selectedLoan.phone || 'N/A'}</p>
                 </div>
-                <div className="glass p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-gray-500 mb-1">PAN Number</p>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <p className="text-xs text-gray-400 mb-1">PAN Number</p>
                   <p className="font-semibold uppercase truncate">{selectedLoan.panNumber || 'N/A'}</p>
                 </div>
-                <div className="glass p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-gray-500 mb-1">Date of Birth</p>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <p className="text-xs text-gray-400 mb-1">Date of Birth</p>
                   <p className="font-semibold truncate">{selectedLoan.dateOfBirth ? new Date(selectedLoan.dateOfBirth).toLocaleDateString() : 'N/A'}</p>
                 </div>
-                <div className="glass p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-gray-500 mb-1">Employment</p>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <p className="text-xs text-gray-400 mb-1">Employment</p>
                   <p className="font-semibold capitalize truncate">{selectedLoan.employmentType}</p>
                 </div>
-                <div className="glass p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-gray-500 mb-1">Monthly Income</p>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <p className="text-xs text-gray-400 mb-1">Monthly Income</p>
                   <p className="font-semibold truncate">₹{selectedLoan.monthlyIncome?.toLocaleString() || '0'}</p>
                 </div>
-                <div className="glass p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-gray-500 mb-1">Loan Type</p>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <p className="text-xs text-gray-400 mb-1">Loan Type</p>
                   <p className="font-semibold capitalize truncate">{selectedLoan.loanType || 'N/A'}</p>
                 </div>
-                <div className="glass p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-gray-500 mb-1">Amount Requested</p>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <p className="text-xs text-gray-400 mb-1">Amount Requested</p>
                   <p className="font-semibold truncate">₹{selectedLoan.amount.toLocaleString()}</p>
                 </div>
-                <div className="glass p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-gray-500 mb-1">Tenure</p>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <p className="text-xs text-gray-400 mb-1">Tenure</p>
                   <p className="font-semibold truncate">{selectedLoan.tenure || selectedLoan.term || 0} Months</p>
                 </div>
                 <div className="glass p-4 rounded-xl border border-white/5 sm:col-span-3">
-                  <p className="text-xs text-gray-500 mb-1">Purpose</p>
+                  <p className="text-xs text-gray-400 mb-1">Purpose</p>
                   <p className="font-semibold">{selectedLoan.purpose || 'N/A'}</p>
                 </div>
               </div>
@@ -488,14 +543,14 @@ export default function AdminDashboard() {
                           href={url} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors group"
+                          className="flex items-center p-3 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 transition-colors group"
                         >
                           <div className="h-10 w-10 bg-emerald-500/20 text-emerald-400 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 group-hover:bg-emerald-500/30">
                             <Eye className="h-5 w-5" />
                           </div>
                           <div className="overflow-hidden">
                             <p className="text-sm font-medium text-white truncate" title={filename}>{filename}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">Click to view</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Click to view</p>
                           </div>
                         </a>
                       );
@@ -508,11 +563,11 @@ export default function AdminDashboard() {
                 <div className="mb-8">
                   <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-2">Risk Scoring Breakdown</h3>
                   
-                  <div className="flex items-center justify-between mb-6 bg-white/5 p-4 rounded-xl">
+                  <div className="flex items-center justify-between mb-6 bg-white/10 p-4 rounded-xl border border-white/20">
                     <span className="text-gray-300 font-medium">Final Credit Score</span>
                     <span className={`text-3xl font-bold ${getScoreColor(selectedLoan.creditScore)}`}>
                       {selectedLoan.creditScore}
-                      <span className="text-sm text-gray-500 font-normal ml-1">/ 100</span>
+                      <span className="text-sm text-gray-400 font-normal ml-1">/ 100</span>
                     </span>
                   </div>
 

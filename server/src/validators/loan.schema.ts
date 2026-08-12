@@ -1,10 +1,20 @@
 import { z } from 'zod';
 
+const optionalNumeric = z.preprocess(
+  (val) => (val === '' || val === undefined || val === null ? undefined : Number(val)),
+  z.number().positive().optional()
+);
+
+const optionalString = z.preprocess(
+  (val) => (val === '' ? undefined : val),
+  z.string().optional()
+);
+
 export const createDraftSchema = z.object({
-  loanType: z.enum(['personal', 'business', 'education', 'home']),
-  amount: z.number().positive(),
-  tenure: z.number().int().positive(),
-  purpose: z.string().min(10),
+  loanType: z.enum(['personal', 'business', 'education', 'home']).optional().or(z.literal('')),
+  amount: optionalNumeric,
+  tenure: optionalNumeric,
+  purpose: z.string().optional(),
 });
 
 export const updateDraftSchema = createDraftSchema.partial().extend({
@@ -12,10 +22,10 @@ export const updateDraftSchema = createDraftSchema.partial().extend({
   phone: z.string().optional(),
   dateOfBirth: z.string().optional(),
   panNumber: z.string().optional(),
-  employmentType: z.enum(['salaried', 'self-employed', 'student']).optional(),
-  monthlyIncome: z.number().positive().optional(),
+  employmentType: z.enum(['salaried', 'self-employed', 'student']).optional().or(z.literal('')),
+  monthlyIncome: optionalNumeric,
   employerName: z.string().optional(),
-  fileUrl: z.string().url().optional(),
+  fileUrl: z.string().url().optional().or(z.literal('')),
   fileUrls: z.array(z.string().url()).optional(),
 });
 

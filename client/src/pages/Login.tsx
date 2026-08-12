@@ -20,8 +20,15 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export const Login = () => {
   const [error, setError] = useState('');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [googleBtnWidth, setGoogleBtnWidth] = useState(window.innerWidth < 400 ? '250px' : '320px');
   const { login, user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleResize = () => setGoogleBtnWidth(window.innerWidth < 400 ? '250px' : '320px');
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -76,7 +83,7 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen pt-16 flex items-center justify-center bg-background relative overflow-hidden">
+    <div className="min-h-screen pt-16 pb-4 flex items-center justify-center relative overflow-x-hidden bg-[#101325]">
       {/* Background decoration */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
@@ -95,9 +102,9 @@ export const Login = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md p-8 glass rounded-2xl relative z-10"
+        className="w-full max-w-md p-5 sm:p-8 glass rounded-2xl relative z-10 my-4 sm:my-8 mx-2 sm:mx-auto"
       >
-        <h2 className="text-3xl font-bold text-center mb-8 text-white">Welcome Back</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-white">Welcome Back</h2>
         
         {error && (
           <div className="mb-6 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
@@ -137,13 +144,10 @@ export const Login = () => {
           </button>
         </form>
 
-        <div className="mt-6 relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-700"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 text-gray-400" style={{ background: '#1c1c1e' }}>Or continue with</span>
-          </div>
+        <div className="mt-6 flex items-center justify-center space-x-4">
+          <div className="h-px bg-white/10 flex-1"></div>
+          <span className="text-gray-400 text-sm">Or</span>
+          <div className="h-px bg-white/10 flex-1"></div>
         </div>
 
         <div className="mt-6 flex justify-center opacity-90 hover:opacity-100 transition-opacity drop-shadow-md min-h-[40px]">
@@ -156,9 +160,11 @@ export const Login = () => {
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() => setError('Google Sign-In failed')}
-              theme="filled_black"
+              theme="outline"
+              size="large"
               shape="pill"
-              width="320px"
+              text="continue_with"
+              width={googleBtnWidth}
             />
           )}
         </div>

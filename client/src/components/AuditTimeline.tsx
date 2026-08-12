@@ -82,7 +82,7 @@ export function AuditTimeline({ loanId }: { loanId: string }) {
   }
 
   if (logs.length === 0) {
-    return <div className="text-center text-gray-500 text-sm py-4 border border-dashed border-gray-700 rounded-lg bg-white/5">No activity logs found.</div>;
+    return <div className="text-center text-gray-400 text-sm py-4 border border-dashed border-gray-700 rounded-lg bg-white/5">No activity logs found.</div>;
   }
 
   return (
@@ -118,7 +118,7 @@ export function AuditTimeline({ loanId }: { loanId: string }) {
                     by <span className="font-medium text-gray-300">{log.userId?.name || 'Unknown User'}</span> <span className="text-[10px] uppercase opacity-75">({log.userId?.role || 'user'})</span>
                   </p>
                 </div>
-                <span className="text-[10px] font-mono text-gray-500 bg-gray-900/80 px-2.5 py-1 rounded-full shrink-0 border border-white/5">
+                <span className="text-[10px] font-mono text-gray-400 bg-gray-900/80 px-2.5 py-1 rounded-full shrink-0 border border-white/5">
                   {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
                 </span>
               </div>

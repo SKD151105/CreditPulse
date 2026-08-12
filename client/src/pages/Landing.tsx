@@ -258,8 +258,8 @@ export const Landing = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-orange-500/20 blur-[100px] rounded-full" />
             
             {/* Terminal Window Mockup */}
-            <div className="glass border border-white/10 rounded-2xl overflow-hidden relative shadow-2xl backdrop-blur-xl">
-              <div className="bg-black/40 px-4 py-3 flex items-center border-b border-white/10">
+            <div className="bg-[#1e2230] border border-white/5 rounded-2xl overflow-hidden relative shadow-2xl">
+              <div className="bg-[#121620] px-4 py-3 flex items-center border-b border-white/5">
                 <div className="flex space-x-2">
                   <div className="w-3 h-3 rounded-full bg-red-500/80" />
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
@@ -285,7 +285,7 @@ export const Landing = () => {
             </div>
             
             {/* Floating Toast Notification Mockup */}
-            <div className="absolute -right-6 -bottom-6 glass border border-white/20 bg-gray-900/90 p-4 rounded-xl shadow-2xl flex items-center space-x-4 max-w-sm animate-bounce" style={{ animationDuration: '3s' }}>
+            <div className="absolute -right-6 -bottom-6 bg-[#252a3a] border border-white/10 p-4 rounded-xl shadow-2xl flex items-center space-x-4 max-w-sm animate-bounce" style={{ animationDuration: '3s' }}>
               <div className="bg-indigo-500/20 p-2 rounded-lg text-indigo-400">
                 <Zap className="h-6 w-6" />
               </div>
@@ -428,19 +428,6 @@ export const Landing = () => {
           </div>
         </motion.div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/5 bg-[#0a0a0f] py-12 px-4 sm:px-6 lg:px-8 text-center relative z-10 mt-auto">
-        <div className="flex justify-center items-center space-x-2 mb-4">
-          <Zap className="h-5 w-5 text-indigo-500" />
-          <span className="text-lg font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-            CreditPulse
-          </span>
-        </div>
-        <p className="text-gray-600 text-sm">
-          © {new Date().getFullYear()} CreditPulse. All rights reserved.
-        </p>
-      </footer>
     </div>
   );
 };

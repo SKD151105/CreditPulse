@@ -11,6 +11,7 @@ import documentRoutes from './routes/document.routes';
 import notificationRoutes from './routes/notification.routes';
 import adminRoutes from './routes/admin.routes';
 import webhookRoutes from './routes/webhook.routes';
+import userRoutes from './routes/user.routes';
 import { apiLimiter } from './middleware/rateLimiter';
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api/loans/:loanId/documents', documentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/webhooks', webhookRoutes);
+app.use('/api/users', userRoutes);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({

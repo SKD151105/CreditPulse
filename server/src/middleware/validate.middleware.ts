@@ -9,8 +9,8 @@ export const validate = (schema: ZodSchema, source: 'body' | 'query' | 'params' 
     
     const result = schema.safeParse(dataToValidate);
     if (!result.success) {
-      console.log(`validate middleware: validation failed`);
-      const errorMessage = result.error.issues[0]?.message || 'Validation failed';
+      console.log(`validate middleware: validation failed`, JSON.stringify(result.error.issues, null, 2));
+      const errorMessage = result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ') || 'Validation failed';
       return next(new ValidationError(errorMessage));
     }
     // Safely assign validated data back to the request
