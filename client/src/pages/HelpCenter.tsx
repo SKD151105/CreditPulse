@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, FileText, CheckCircle, Clock, Shield, Search, ArrowRight, ChevronDown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 
 export const HelpCenter = () => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);

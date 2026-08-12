@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Phone, ExternalLink, HelpCircle, ChevronRight, Zap, ChevronUp, Check } from 'lucide-react';
+import { Mail, Phone, ExternalLink, ChevronRight, Zap, ChevronUp, Check } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
