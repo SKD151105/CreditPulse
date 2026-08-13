@@ -23,7 +23,7 @@ export class WebhookController {
     }
   }
 
-  static async list(req: Request, res: Response, next: NextFunction) {
+  static async list(_req: Request, res: Response, next: NextFunction) {
     try {
       const webhooks = await Webhook.find().sort({ createdAt: -1 });
       res.status(200).json({ success: true, data: webhooks });

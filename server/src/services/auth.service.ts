@@ -1,11 +1,10 @@
 import { OAuth2Client } from 'google-auth-library';
 import crypto from 'crypto';
-import axios from 'axios';
 import User, { IUser } from '../models/User';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { hashPassword, comparePassword } from '../utils/password';
 import logger from '../utils/logger';
-import { AppError, UnauthorizedError, ConflictError } from '../utils/errors';
+import { UnauthorizedError, ConflictError } from '../utils/errors';
 import { env } from '../config/env';
 
 const client = new OAuth2Client(env.GOOGLE_CLIENT_ID);

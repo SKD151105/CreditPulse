@@ -5,11 +5,6 @@ const optionalNumeric = z.preprocess(
   z.number().positive().optional()
 );
 
-const optionalString = z.preprocess(
-  (val) => (val === '' ? undefined : val),
-  z.string().optional()
-);
-
 export const createDraftSchema = z.object({
   loanType: z.enum(['personal', 'business', 'education', 'home']).optional().or(z.literal('')),
   amount: optionalNumeric,
