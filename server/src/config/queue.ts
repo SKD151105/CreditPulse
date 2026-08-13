@@ -1,6 +1,9 @@
 import { Queue } from 'bullmq';
-import { redisConnection } from './redis';
+import { createRedisConnection } from './redis';
 
-export const scoringQueue = new Queue('scoring-queue', { connection: redisConnection });
-export const notificationQueue = new Queue('notification-queue', { connection: redisConnection });
-export const webhookQueue = new Queue('webhook-queue', { connection: redisConnection });
+// Each Queue gets its OWN dedicated ioredis connection.
+// Sharing a single connection between Queues (and with Workers) causes
+// silent BullMQ job delivery failures.
+export const scoringQueue = new Queue('scoring-queue', { connection: createRedisConnection() });
+export const notificationQueue = new Queue('notification-queue', { connection: createRedisConnection() });
+export const webhookQueue = new Queue('webhook-queue', { connection: createRedisConnection() });

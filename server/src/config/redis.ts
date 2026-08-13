@@ -11,11 +11,17 @@ redis.on('error', (err) => {
   console.error('Redis cache connection error:', err);
 });
 
-// Dedicated Redis Connection for BullMQ
-// BullMQ requires maxRetriesPerRequest: null and needs offline queues to remain enabled (default true)
-export const redisConnection = new Redis(env.REDIS_URI, {
-  maxRetriesPerRequest: null
-});
+/**
+ * Factory function: creates a fresh ioredis connection for BullMQ.
+ * BullMQ requires each Queue AND Worker to have their OWN dedicated
+ * ioredis instance — sharing a single connection causes silent job
+ * delivery failures.
+ */
+export const createRedisConnection = () =>
+  new Redis(env.REDIS_URI, { maxRetriesPerRequest: null });
+
+// Dedicated singleton for BullMQ (legacy — prefer createRedisConnection() for new usages)
+export const redisConnection = createRedisConnection();
 
 // Dedicated Redis Connection for Pub/Sub (SSE notifications)
 // Must NOT have enableOfflineQueue: false — pub/sub streams need it enabled to initialize

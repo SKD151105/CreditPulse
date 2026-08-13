@@ -320,13 +320,13 @@ export default function ApplicationForm() {
                 <label className="block text-sm font-medium text-gray-100 mb-2">Loan Type</label>
                 <select 
                   {...register('loanType')}
-                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
+                  className="w-full bg-[#1a1f3c] border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer"
                 >
-                  <option value="">Select type...</option>
-                  <option value="personal">Personal</option>
-                  <option value="business">Business</option>
-                  <option value="education">Education</option>
-                  <option value="home">Home</option>
+                  <option value="" className="bg-[#1a1f3c] text-gray-400">Select type...</option>
+                  <option value="personal" className="bg-[#1a1f3c] text-white">Personal</option>
+                  <option value="business" className="bg-[#1a1f3c] text-white">Business</option>
+                  <option value="education" className="bg-[#1a1f3c] text-white">Education</option>
+                  <option value="home" className="bg-[#1a1f3c] text-white">Home</option>
                 </select>
                 {errors.loanType && <p className="mt-1 text-sm text-red-400">{errors.loanType.message}</p>}
               </div>
@@ -441,12 +441,12 @@ export default function ApplicationForm() {
                 <label className="block text-sm font-medium text-gray-100 mb-2">Employment Type</label>
                 <select 
                   {...register('employmentType')}
-                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
+                  className="w-full bg-[#1a1f3c] border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer"
                 >
-                  <option value="">Select type...</option>
-                  <option value="salaried">Salaried</option>
-                  <option value="self-employed">Self-employed</option>
-                  <option value="student">Student</option>
+                  <option value="" className="bg-[#1a1f3c] text-gray-400">Select type...</option>
+                  <option value="salaried" className="bg-[#1a1f3c] text-white">Salaried</option>
+                  <option value="self-employed" className="bg-[#1a1f3c] text-white">Self-employed</option>
+                  <option value="student" className="bg-[#1a1f3c] text-white">Student</option>
                 </select>
                 {errors.employmentType && <p className="mt-1 text-sm text-red-400">{errors.employmentType.message}</p>}
               </div>

@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import { redisConnection } from '../config/redis';
+import { createRedisConnection } from '../config/redis';
 import { ScoringService } from '../services/scoring.service';
 import { NotificationService } from '../services/notification.service';
 import { WebhookService } from '../services/webhook.service';
@@ -54,7 +54,7 @@ export const scoringWorker = new Worker(
     }
   },
   { 
-    connection: redisConnection,
+    connection: createRedisConnection(),
     concurrency: 5, // Process 5 loans concurrently
     limiter: {
       max: 10, // Max 10 jobs per second

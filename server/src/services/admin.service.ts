@@ -78,6 +78,18 @@ export class AdminService {
 
     await CacheService.deleteByPattern(`loan:*`);
 
+    // Create a separate audit log for the under_review status change
+    // so the Activity Timeline shows it as its own step
+    await AuditLog.create({
+      userId: adminId,
+      action: 'UPDATE_LOAN_STATUS',
+      resource: 'loan',
+      resourceId: loanId,
+      details: { method: 'PATCH', url: `/admin/loans/${loanId}/assign`, statusCode: 200, body: { status: 'under_review' } },
+      ipAddress: 'system',
+      userAgent: 'system',
+    });
+
     await NotificationService.sendNotification(
       loan.applicantId.toString(),
       'status_change',

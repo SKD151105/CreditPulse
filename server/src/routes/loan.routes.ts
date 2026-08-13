@@ -17,7 +17,6 @@ router.post(
   '/',
   authenticate,
   validate(createDraftSchema),
-  auditLog('CREATE_LOAN', 'loan'),
   LoanController.create
 );
 

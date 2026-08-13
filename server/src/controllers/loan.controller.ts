@@ -4,6 +4,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
 import { env } from '../config/env';
+import AuditLog from '../models/AuditLog';
 
 const s3Client = new S3Client({
   region: env.AWS_REGION,
@@ -17,6 +18,17 @@ export class LoanController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await LoanService.createDraft(req.user!._id, req.body);
+      // Manually create the audit log here because the generic middleware
+      // runs on POST / where req.params.id is undefined, causing wrong resourceId
+      await new AuditLog({
+        userId: req.user!._id,
+        action: 'CREATE_LOAN',
+        resource: 'loan',
+        resourceId: result._id,
+        details: { method: 'POST', url: req.url, statusCode: 201 },
+        ipAddress: req.ip || req.socket.remoteAddress || 'unknown',
+        userAgent: req.headers['user-agent'] || 'unknown',
+      }).save();
       res.status(201).json({ success: true, data: result });
     } catch (error) {
       next(error);
