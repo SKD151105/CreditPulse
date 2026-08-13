@@ -5,6 +5,7 @@ import { env } from '../config/env';
 import LoanApplication from '../models/LoanApplication';
 import { CacheService } from './cache.service';
 import { NotFoundError, UnauthorizedError, BadRequestError } from '../utils/errors';
+import logger from '../utils/logger';
 
 const s3Client = new S3Client({
   region: env.AWS_REGION,
@@ -132,7 +133,7 @@ export class DocumentService {
       await s3Client.send(command);
     } catch (error) {
       // Continue even if S3 delete fails so DB remains consistent, just log it
-      console.error('Failed to delete S3 object', error);
+      logger.error('Failed to delete S3 object', { error });
     }
 
     await CacheService.del(`loan:${loanId}`);

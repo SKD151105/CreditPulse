@@ -3,18 +3,13 @@ import { AuthService } from '../services/auth.service';
 import User from '../models/User';
 import LoanApplication from '../models/LoanApplication';
 import { env } from '../config/env';
-import logger from '../utils/logger';
 
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction) {
-    logger.info('--- Register Controller Started ---');
     try {
-      logger.info('Calling AuthService.register...');
       const result = await AuthService.register(req.body);
-      logger.info('AuthService.register completed successfully.');
       res.status(201).json({ success: true, data: result });
     } catch (error) {
-      logger.error(`Error in register controller: ${error}`);
       next(error);
     }
   }
@@ -29,14 +24,10 @@ export class AuthController {
   }
 
   static async googleLogin(req: Request, res: Response, next: NextFunction) {
-    logger.info('--- Google Login Controller Started ---');
     try {
-      logger.info('Calling AuthService.googleLogin...');
       const result = await AuthService.googleLogin(req.body);
-      logger.info('AuthService.googleLogin completed successfully.');
       res.status(200).json({ success: true, data: result });
     } catch (error) {
-      logger.error(`Error in googleLogin controller: ${error}`);
       next(error);
     }
   }
