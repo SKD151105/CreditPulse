@@ -1,6 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
-import redisClient from '../config/redis';
+import { redisPubSub } from '../config/redis';
 
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -8,7 +8,7 @@ export const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
-    sendCommand: (...args: string[]) => redisClient.call(args[0], ...args.slice(1)) as any,
+    sendCommand: (...args: string[]) => redisPubSub.call(args[0], ...args.slice(1)) as any,
   }),
   passOnStoreError: true, // If Redis goes down, allow requests through instead of throwing 500 errors
   message: { success: false, message: 'Too many requests, please try again later.' }
