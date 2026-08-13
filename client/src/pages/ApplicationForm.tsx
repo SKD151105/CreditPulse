@@ -200,7 +200,7 @@ export default function ApplicationForm() {
         setDraftId(currentLoanId);
       }
       
-      // Step 2: Update draft with personal information
+      // Step 2: Update draft with all information
       await axiosInstance.patch(`/loans/${currentLoanId}`, {
         fullName: data.fullName,
         phone: data.phone,
@@ -208,7 +208,11 @@ export default function ApplicationForm() {
         panNumber: data.panNumber,
         employmentType: data.employmentType,
         monthlyIncome: data.monthlyIncome,
-        fileUrls: data.fileUrls
+        fileUrls: data.fileUrls,
+        loanType: data.loanType,
+        amount: data.amount,
+        tenure: data.tenure,
+        purpose: data.purpose
       });
       
       // Step 3: Submit application for scoring
@@ -247,6 +251,10 @@ export default function ApplicationForm() {
       }
       
       await axiosInstance.patch(`/loans/${currentLoanId}`, {
+        ...(data.loanType ? { loanType: data.loanType } : {}),
+        ...((data.amount ?? 0) > 0 ? { amount: data.amount } : {}),
+        ...((data.tenure ?? 0) > 0 ? { tenure: data.tenure } : {}),
+        ...(data.purpose ? { purpose: data.purpose } : {}),
         ...(data.fullName ? { fullName: data.fullName } : {}),
         ...(data.phone ? { phone: data.phone } : {}),
         ...(data.dateOfBirth ? { dateOfBirth: data.dateOfBirth } : {}),

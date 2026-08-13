@@ -1,9 +1,9 @@
 import { Queue } from 'bullmq';
-import redis from '../config/redis';
+import { redisConnection } from '../config/redis';
 import logger from '../utils/logger';
 
 export const webhookQueue = new Queue('webhook-queue', {
-  connection: redis,
+  connection: redisConnection,
   defaultJobOptions: {
     attempts: 5,
     backoff: {

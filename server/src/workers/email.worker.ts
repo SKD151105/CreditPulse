@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import redis from '../config/redis';
+import { redisConnection } from '../config/redis';
 import logger from '../utils/logger';
 import { EmailService } from '../services/email.service';
 
@@ -23,7 +23,7 @@ export const emailWorker = new Worker(
       throw error;
     }
   },
-  { connection: redis }
+  { connection: redisConnection }
 );
 
 emailWorker.on('failed', (job, err) => {

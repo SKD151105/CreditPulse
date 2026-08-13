@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import redis from '../config/redis';
+import { redisConnection } from '../config/redis';
 import logger from '../utils/logger';
 import Webhook from '../models/Webhook';
 import axios from 'axios';
@@ -50,7 +50,7 @@ export const webhookWorker = new Worker(
       throw error; // Throw so BullMQ retries
     }
   },
-  { connection: redis }
+  { connection: redisConnection }
 );
 
 webhookWorker.on('failed', (job, err) => {

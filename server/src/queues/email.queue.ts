@@ -1,9 +1,9 @@
 import { Queue } from 'bullmq';
-import redis from '../config/redis';
+import { redisConnection } from '../config/redis';
 import logger from '../utils/logger';
 
 export const emailQueue = new Queue('email-queue', {
-  connection: redis,
+  connection: redisConnection,
   defaultJobOptions: {
     attempts: 3,
     backoff: {
