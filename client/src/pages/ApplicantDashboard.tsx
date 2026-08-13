@@ -265,7 +265,7 @@ export default function ApplicantDashboard() {
                 
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="text-xl font-bold mb-1">${loan.amount.toLocaleString()}</h3>
+                    <h3 className="text-xl font-bold mb-1">${(loan.amount || 0).toLocaleString()}</h3>
                     <p className="text-gray-400 text-sm">{loan.purpose}</p>
                   </div>
                   {loan.status.toLowerCase() === 'approved' && (
@@ -419,7 +419,7 @@ export default function ApplicantDashboard() {
                         </div>
                         <div className="overflow-hidden">
                           <p className="text-sm font-medium text-white truncate" title={doc.originalName}>{doc.originalName}</p>
-                          <p className="text-xs text-gray-400 mt-0.5 capitalize">{doc.type.replace('_', ' ')}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 capitalize">{(doc.type || 'other').replace('_', ' ')}</p>
                         </div>
                       </button>
                     ))}

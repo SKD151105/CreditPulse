@@ -531,7 +531,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
                   <p className="text-xs text-gray-400 mb-1">Amount Requested</p>
-                  <p className="font-semibold truncate">₹{selectedLoan.amount.toLocaleString()}</p>
+                  <p className="font-semibold truncate">₹{(selectedLoan.amount || 0).toLocaleString()}</p>
                 </div>
                 <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
                   <p className="text-xs text-gray-400 mb-1">Tenure</p>
@@ -562,7 +562,7 @@ export default function AdminDashboard() {
                         </div>
                         <div className="overflow-hidden">
                           <p className="text-sm font-medium text-white truncate" title={doc.originalName}>{doc.originalName}</p>
-                          <p className="text-xs text-gray-400 mt-0.5 capitalize">{doc.type.replace('_', ' ')}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 capitalize">{(doc.type || 'other').replace('_', ' ')}</p>
                         </div>
                       </button>
                     ))}

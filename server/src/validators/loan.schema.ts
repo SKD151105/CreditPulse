@@ -20,8 +20,13 @@ export const updateDraftSchema = createDraftSchema.partial().extend({
   employmentType: z.enum(['salaried', 'self-employed', 'student']).optional().or(z.literal('')),
   monthlyIncome: optionalNumeric,
   employerName: z.string().optional(),
-  fileUrl: z.string().url().optional().or(z.literal('')),
-  fileUrls: z.array(z.string().url()).optional(),
+  documents: z.array(z.object({
+    type: z.string(),
+    s3Key: z.string(),
+    originalName: z.string(),
+    mimeType: z.string(),
+    size: z.number()
+  })).optional(),
 });
 
 export const loanQuerySchema = z.object({
