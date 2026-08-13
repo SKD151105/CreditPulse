@@ -238,8 +238,8 @@ export default function ApplicationForm() {
       if (!currentLoanId) {
         const draftRes = await axiosInstance.post('/loans', {
           ...(data.loanType ? { loanType: data.loanType } : {}),
-          ...(data.amount > 0 ? { amount: data.amount } : {}),
-          ...(data.tenure > 0 ? { tenure: data.tenure } : {}),
+          ...((data.amount ?? 0) > 0 ? { amount: data.amount } : {}),
+          ...((data.tenure ?? 0) > 0 ? { tenure: data.tenure } : {}),
           ...(data.purpose ? { purpose: data.purpose } : {})
         });
         currentLoanId = draftRes.data.data._id;
@@ -252,7 +252,7 @@ export default function ApplicationForm() {
         ...(data.dateOfBirth ? { dateOfBirth: data.dateOfBirth } : {}),
         ...(data.panNumber ? { panNumber: data.panNumber } : {}),
         ...(data.employmentType ? { employmentType: data.employmentType } : {}),
-        ...(data.monthlyIncome > 0 ? { monthlyIncome: data.monthlyIncome } : {}),
+        ...((data.monthlyIncome ?? 0) > 0 ? { monthlyIncome: data.monthlyIncome } : {}),
         ...(data.fileUrls && data.fileUrls.length > 0 ? { fileUrls: data.fileUrls } : {})
       });
       
