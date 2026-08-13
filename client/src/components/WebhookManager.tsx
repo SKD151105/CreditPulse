@@ -82,11 +82,27 @@ export function WebhookManager() {
   };
 
   if (loading) {
-    return <div className="animate-pulse flex space-x-4"><div className="flex-1 space-y-4 py-1"><div className="h-4 bg-gray-700 rounded w-3/4"></div><div className="space-y-2"><div className="h-4 bg-gray-700 rounded"></div><div className="h-4 bg-gray-700 rounded w-5/6"></div></div></div></div>;
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="flex justify-between items-center gap-4">
+          <div>
+            <div className="h-7 w-48 bg-white/10 rounded mb-2"></div>
+            <div className="h-4 w-72 bg-white/5 rounded"></div>
+          </div>
+          <div className="h-10 w-32 bg-white/10 rounded-lg"></div>
+        </div>
+        <div className="glass border border-white/10 rounded-xl h-32"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
       <div className="flex justify-between items-center gap-4">
         <div>
           <h2 className="text-xl font-bold">Partner Webhooks</h2>
@@ -103,14 +119,17 @@ export function WebhookManager() {
 
       <AnimatePresence>
         {showAddForm && (
-          <motion.form
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            onSubmit={handleAdd}
-            className="glass border border-white/10 rounded-xl p-6 overflow-hidden"
+            className="overflow-hidden"
           >
-            <div className="space-y-4">
+            <form
+              onSubmit={handleAdd}
+              className="glass border border-white/10 rounded-xl p-6"
+            >
+              <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Payload URL</label>
                 <input
@@ -149,8 +168,9 @@ export function WebhookManager() {
                 Save Webhook
               </button>
             </div>
-          </motion.form>
-        )}
+          </form>
+        </motion.div>
+      )}
       </AnimatePresence>
 
       <div className="grid grid-cols-1 gap-4">
@@ -223,6 +243,6 @@ export function WebhookManager() {
           ))
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
