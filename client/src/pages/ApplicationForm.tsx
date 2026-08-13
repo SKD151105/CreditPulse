@@ -59,7 +59,7 @@ export default function ApplicationForm() {
   const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
-    (window as any).__checkApplicationDirty = () => {
+    (window as Window & { __checkApplicationDirty?: () => boolean }).__checkApplicationDirty = () => {
       if (isSubmitting || isSavingDraft) return false;
       const values = getValues();
       return !!(
@@ -77,7 +77,7 @@ export default function ApplicationForm() {
       );
     };
     return () => {
-      delete (window as any).__checkApplicationDirty;
+      delete (window as Window & { __checkApplicationDirty?: () => boolean }).__checkApplicationDirty;
     };
   }, [getValues, isSubmitting, isSavingDraft]);
 
@@ -88,7 +88,7 @@ export default function ApplicationForm() {
   }, []);
 
   const handleBack = () => {
-    const isDirty = (window as any).__checkApplicationDirty?.();
+    const isDirty = (window as Window & { __checkApplicationDirty?: () => boolean }).__checkApplicationDirty?.();
     if (isDirty) {
       setShowExitModal(true);
     } else {
@@ -228,7 +228,7 @@ export default function ApplicationForm() {
     }
   };
 
-  const onSaveDraft = async (data: any) => {
+  const onSaveDraft = async (data: Partial<ApplicationFormValues>) => {
     setIsSavingDraft(true);
     setError('');
     

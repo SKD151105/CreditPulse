@@ -23,7 +23,7 @@ export const AdminPromote = () => {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           // Force a full reload to clear any React state/context and go to admin login
-          window.location.href = '/admin/login';
+          window.location.href = '/login';
         }, 2000);
       }
     } catch (err: unknown) {

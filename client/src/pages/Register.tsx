@@ -69,7 +69,7 @@ export const Register = () => {
     }
   };
 
-  const handleDemoLogin = async (credentials: any) => {
+  const handleDemoLogin = async (credentials: Record<string, string>) => {
     setError('');
     try {
       const response = await axiosInstance.post('/auth/login', credentials);

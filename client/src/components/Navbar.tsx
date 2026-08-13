@@ -15,7 +15,7 @@ export const Navbar = () => {
             to="/" 
             className="flex items-center space-x-1 sm:space-x-2"
             onClick={(e) => {
-              if ((window as any).__checkApplicationDirty?.()) {
+              if ((window as Window & { __checkApplicationDirty?: () => boolean }).__checkApplicationDirty?.()) {
                 e.preventDefault();
                 window.dispatchEvent(new CustomEvent('requestExitModal'));
               }
@@ -62,7 +62,7 @@ export const Navbar = () => {
                   <Link
                     to={user.role === 'admin' ? '/admin' : '/dashboard'}
                     onClick={(e) => {
-                      if ((window as any).__checkApplicationDirty?.()) {
+                      if ((window as Window & { __checkApplicationDirty?: () => boolean }).__checkApplicationDirty?.()) {
                         e.preventDefault();
                         window.dispatchEvent(new CustomEvent('requestExitModal'));
                       }
