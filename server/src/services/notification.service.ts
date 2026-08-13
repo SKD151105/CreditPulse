@@ -1,13 +1,13 @@
 import Notification from '../models/Notification';
 import { Response } from 'express';
 import logger from '../utils/logger';
-import redisClient from '../config/redis';
+import { redisPubSub } from '../config/redis';
 
 export class NotificationService {
   private static clients = new Map<string, Response[]>();
   
   // Create a separate Redis connection just for subscribing
-  private static subscriber = redisClient.duplicate();
+  private static subscriber = redisPubSub.duplicate();
 
   static async initPubSub() {
     try {
@@ -64,7 +64,7 @@ export class NotificationService {
     });
 
     // 2. Publish to Redis (The API Server will hear this and send the SSE)
-    await redisClient.publish('notifications', JSON.stringify({
+    await redisPubSub.publish('notifications', JSON.stringify({
       userId: userId.toString(),
       notification
     }));

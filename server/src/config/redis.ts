@@ -17,4 +17,10 @@ export const redisConnection = new Redis(env.REDIS_URI, {
   maxRetriesPerRequest: null
 });
 
+// Dedicated Redis Connection for Pub/Sub (SSE notifications)
+// Must NOT have enableOfflineQueue: false — pub/sub streams need it enabled to initialize
+export const redisPubSub = new Redis(env.REDIS_URI, {
+  maxRetriesPerRequest: null
+});
+
 export default redis;
