@@ -1,31 +1,20 @@
 import Redis from 'ioredis';
 import { env } from './env';
 
-const redisOptions: Record<string, any> = {
+// Standard Redis Configuration for caching and rate limiting
+const redis = new Redis(env.REDIS_URI, {
   maxRetriesPerRequest: null,
-  enableReadyCheck: false, // Critical for Upstash: bypass INFO command check that hangs the connection
-  family: 4, // Force IPv4 to prevent resolution hangs
-  keepAlive: 10000, // Important for Upstash to prevent idle disconnects
-  enableOfflineQueue: false // CRITICAL: If Redis is down, fail fast instead of hanging the entire backend
-};
-
-const redis = new Redis(env.REDIS_URI, redisOptions);
-
-redis.on('connect', () => {
-  // Silent reconnects to prevent log spam from Upstash culling idle connections
+  enableOfflineQueue: false // Fail fast for cache operations if Redis goes down
 });
 
 redis.on('error', (err) => {
   console.error('Redis cache connection error:', err);
 });
 
-// BullMQ requires a separate connection config. We can just export a pre-configured ioredis instance
-// with enableOfflineQueue allowed (default true) for BullMQ to handle its internal queues properly
+// Dedicated Redis Connection for BullMQ
+// BullMQ requires maxRetriesPerRequest: null and needs offline queues to remain enabled (default true)
 export const redisConnection = new Redis(env.REDIS_URI, {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false, // Critical for Upstash
-  family: 4,
-  keepAlive: 10000
+  maxRetriesPerRequest: null
 });
 
 export default redis;
