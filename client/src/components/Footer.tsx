@@ -15,8 +15,8 @@ export const Footer = () => {
     const willExpand = !isExpanded;
     setIsExpanded(willExpand);
     
-    if (willExpand) {
-      // Keep scrolling to the bottom as the footer expands (animation is 300ms)
+    if (willExpand || !willExpand) {
+      // Keep scrolling to the bottom as the footer expands/collapses (animation is 300ms)
       const startTime = Date.now();
       const scrollInterval = setInterval(() => {
         window.scrollTo(0, document.body.scrollHeight);
