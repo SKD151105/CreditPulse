@@ -33,6 +33,12 @@ router.get(
   LoanController.getOne
 );
 
+router.get(
+  '/:id/documents/:docId/download',
+  authenticate,
+  LoanController.getDocumentDownloadUrl
+);
+
 router.patch(
   '/:id',
   authenticate,

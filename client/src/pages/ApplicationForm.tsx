@@ -26,7 +26,13 @@ const applicationSchema = z.object({
   monthlyIncome: z.coerce.number({
     invalid_type_error: "Please enter a valid amount"
   }).min(1, 'Monthly income is required'),
-  fileUrls: z.array(z.string().url()).optional()
+  documents: z.array(z.object({
+    type: z.string(),
+    s3Key: z.string(),
+    originalName: z.string(),
+    mimeType: z.string(),
+    size: z.number()
+  })).optional()
 });
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
@@ -73,7 +79,7 @@ export default function ApplicationForm() {
         values.panNumber || 
         values.employmentType || 
         values.monthlyIncome > 0 || 
-        (values.fileUrls && values.fileUrls.length > 0)
+        (values.documents && values.documents.length > 0)
       );
     };
     return () => {
@@ -119,7 +125,7 @@ export default function ApplicationForm() {
           panNumber: data.panNumber,
           employmentType: data.employmentType,
           monthlyIncome: data.monthlyIncome,
-          fileUrls: data.fileUrls && data.fileUrls.length > 0 ? data.fileUrls : (data.fileUrl ? [data.fileUrl] : [])
+          documents: data.documents && data.documents.length > 0 ? data.documents : []
         });
       }).catch(err => {
         console.error("Failed to fetch loan for editing", err);
@@ -127,7 +133,7 @@ export default function ApplicationForm() {
     }
   }, [editId, reset, navigate]);
 
-  const fileUrls = useWatch({ control, name: 'fileUrls' }) || [];
+  const documents = useWatch({ control, name: 'documents' }) || [];
   const watchedAmount = useWatch({ control, name: 'amount' });
   const watchedTenure = useWatch({ control, name: 'tenure' });
 
@@ -140,7 +146,7 @@ export default function ApplicationForm() {
     setError('');
 
     try {
-      const newUrls: string[] = [];
+      const newDocuments: any[] = [];
       const totalFiles = files.length;
       let completedFiles = 0;
 
@@ -153,7 +159,7 @@ export default function ApplicationForm() {
           }
         });
 
-        const { presignedUrl, fileUrl: finalFileUrl } = presignRes.data.data;
+        const { presignedUrl, s3Key } = presignRes.data.data;
 
         await axios.put(presignedUrl, file, {
           headers: {
@@ -165,11 +171,23 @@ export default function ApplicationForm() {
             setUploadProgress(overallPercent);
           }
         });
-        newUrls.push(finalFileUrl);
+        
+        let type = 'other';
+        if (file.name.toLowerCase().includes('pan')) type = 'pan';
+        else if (file.name.toLowerCase().includes('aadhaar')) type = 'aadhaar';
+        else if (file.name.toLowerCase().includes('statement')) type = 'bank_statement';
+        
+        newDocuments.push({
+          type,
+          s3Key,
+          originalName: file.name,
+          mimeType: file.type,
+          size: file.size
+        });
         completedFiles++;
       }
 
-      setValue('fileUrls', [...(fileUrls || []), ...newUrls]);
+      setValue('documents', [...(documents || []), ...newDocuments]);
     } catch (err) {
       setError('Failed to upload files. Please try again.');
       console.error(err);
@@ -208,7 +226,7 @@ export default function ApplicationForm() {
         panNumber: data.panNumber,
         employmentType: data.employmentType,
         monthlyIncome: data.monthlyIncome,
-        fileUrls: data.fileUrls,
+        documents: data.documents,
         loanType: data.loanType,
         amount: data.amount,
         tenure: data.tenure,
@@ -261,7 +279,7 @@ export default function ApplicationForm() {
         ...(data.panNumber ? { panNumber: data.panNumber } : {}),
         ...(data.employmentType ? { employmentType: data.employmentType } : {}),
         ...((data.monthlyIncome ?? 0) > 0 ? { monthlyIncome: data.monthlyIncome } : {}),
-        ...(data.fileUrls && data.fileUrls.length > 0 ? { fileUrls: data.fileUrls } : {})
+        ...(data.documents && data.documents.length > 0 ? { documents: data.documents } : {})
       });
       
       navigate('/dashboard');
@@ -320,7 +338,7 @@ export default function ApplicationForm() {
                 <label className="block text-sm font-medium text-gray-100 mb-2">Loan Type</label>
                 <select 
                   {...register('loanType')}
-                  className="w-full bg-[#1a1f3c] border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer"
                 >
                   <option value="" className="bg-[#1a1f3c] text-gray-400">Select type...</option>
                   <option value="personal" className="bg-[#1a1f3c] text-white">Personal</option>
@@ -441,7 +459,7 @@ export default function ApplicationForm() {
                 <label className="block text-sm font-medium text-gray-100 mb-2">Employment Type</label>
                 <select 
                   {...register('employmentType')}
-                  className="w-full bg-[#1a1f3c] border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer"
+                  className="w-full bg-white/5 border border-gray-500 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer"
                 >
                   <option value="" className="bg-[#1a1f3c] text-gray-400">Select type...</option>
                   <option value="salaried" className="bg-[#1a1f3c] text-white">Salaried</option>

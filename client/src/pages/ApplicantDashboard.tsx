@@ -22,9 +22,8 @@ interface Loan {
   creditScore?: number;
   createdAt: string;
   tenure?: number;
-  fileUrls?: string[];
-  fileUrl?: string;
   scoringBreakdown?: Record<string, { score: number; weight: number }>;
+  documents?: Array<{ _id: string; type: string; originalName: string; mimeType: string; size: number; }>;
 }
 
 const containerVariants: Variants = {
@@ -71,6 +70,19 @@ export default function ApplicantDashboard() {
   const [totalPages, setTotalPages] = useState(1);
   const [printingLoan, setPrintingLoan] = useState<Loan | null>(null);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
+  const [viewingDocId, setViewingDocId] = useState<string | null>(null);
+
+  const handleViewDocument = async (loanId: string, docId: string) => {
+    try {
+      setViewingDocId(docId);
+      const res = await axiosInstance.get(`/loans/${loanId}/documents/${docId}/download`);
+      window.open(res.data.data.downloadUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      alert('Failed to load document. Please try again.');
+    } finally {
+      setViewingDocId(null);
+    }
+  };
 
   useEffect(() => {
     if (printingLoan) {
@@ -388,30 +400,29 @@ export default function ApplicantDashboard() {
                 </div>
               </div>
 
-              {(selectedLoan.fileUrls?.length ? selectedLoan.fileUrls : (selectedLoan.fileUrl ? [selectedLoan.fileUrl] : [])).length > 0 && (
+              {(selectedLoan.documents && selectedLoan.documents.length > 0) && (
                 <div>
                   <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-2">Supporting Documents</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {(selectedLoan.fileUrls?.length ? selectedLoan.fileUrls : (selectedLoan.fileUrl ? [selectedLoan.fileUrl] : [])).map((url, idx) => {
-                      const filename = url.split('/').pop()?.split('?')[0] || `Document ${idx + 1}`;
-                      return (
-                        <a 
-                          key={idx} 
-                          href={url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center p-3 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 transition-colors group"
-                        >
-                          <div className="h-10 w-10 bg-emerald-500/20 text-emerald-400 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 group-hover:bg-emerald-500/30">
-                            <Eye className="h-5 w-5" />
-                          </div>
-                          <div className="overflow-hidden">
-                            <p className="text-sm font-medium text-white truncate" title={filename}>{filename}</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Click to view</p>
-                          </div>
-                        </a>
-                      );
-                    })}
+                    {selectedLoan.documents.map((doc) => (
+                      <button
+                        key={doc._id}
+                        type="button"
+                        disabled={viewingDocId === doc._id}
+                        onClick={() => handleViewDocument(selectedLoan._id, doc._id)}
+                        className="flex items-center p-3 bg-white/10 hover:bg-white/20 rounded-xl border border-white/20 transition-colors group text-left disabled:opacity-60 disabled:cursor-wait w-full"
+                      >
+                        <div className="h-10 w-10 bg-emerald-500/20 text-emerald-400 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 group-hover:bg-emerald-500/30">
+                          {viewingDocId === doc._id
+                            ? <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-emerald-400" />
+                            : <Eye className="h-5 w-5" />}
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="text-sm font-medium text-white truncate" title={doc.originalName}>{doc.originalName}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 capitalize">{doc.type.replace('_', ' ')}</p>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}

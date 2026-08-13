@@ -176,6 +176,48 @@ npm run seed
 | `VITE_GOOGLE_CLIENT_ID` | Google OAuth Client ID |
 | `VITE_API_URL`          | Target API URL         |
 
+## Debugging & Viewing Logs
+
+Whether you are running locally or on the production EC2 server, Docker makes it easy to view live logs and debug background workers (Redis/BullMQ).
+
+### Local Environment Debugging
+
+To view live logs from your locally running containers, open a terminal in the `server` directory and run:
+
+```bash
+# View all logs in real-time
+docker compose logs -f
+
+# View logs only for the main API server
+docker compose logs -f api
+
+# View logs only for the background worker (scoring, emails)
+docker compose logs -f worker
+```
+
+### Production (EC2) Debugging
+
+When connected to your EC2 instance via SSH, use standard Docker commands to monitor the production containers.
+
+```bash
+# List all running containers to get their exact names
+docker ps
+
+# View live logs for the API server (usually named something like ubuntu-api-1)
+docker logs -f ubuntu-api-1
+
+# View live logs for the background worker (usually named ubuntu-worker-1)
+docker logs -f ubuntu-worker-1
+
+# View the last 100 lines of worker logs
+docker logs --tail 100 ubuntu-worker-1
+```
+
+**Common Debugging Scenarios:**
+- **Jobs not processing?** Check the worker logs (`docker logs -f ubuntu-worker-1`). You should see lines like `Worker connected to database` and `...worker is listening for jobs`. If jobs fail, the stack trace will appear here.
+- **API Errors (500s)?** Check the API logs (`docker logs -f ubuntu-api-1`). Winston logs all uncaught errors here.
+- **Silent Failures?** Make sure your `.env` has `NODE_ENV=production` and the Winston logger level is set to `info` so that standard logs aren't suppressed.
+
 ---
 
 ## Deployment

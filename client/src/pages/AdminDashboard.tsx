@@ -34,8 +34,6 @@ interface Loan {
   scoringBreakdown?: ScoringBreakdown;
   monthlyIncome: number;
   employmentType: string;
-  fileUrl?: string;
-  fileUrls?: string[];
   documents?: Array<{ _id: string; type: string; originalName: string; mimeType: string; size: number; }>;
   phone?: string;
   dateOfBirth?: string;

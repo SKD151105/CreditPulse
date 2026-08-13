@@ -113,4 +113,19 @@ export class LoanController {
       next(error);
     }
   }
+
+  static async getDocumentDownloadUrl(req: Request, res: Response, next: NextFunction) {
+    try {
+      const params = req.params as Record<string, string>;
+      const loanId = params.id;
+      const docId = params.docId;
+      const { DocumentService } = await import('../services/document.service');
+      const userId = String(req.user!._id);
+      
+      const result = await DocumentService.generateDownloadUrl(loanId, userId, docId, 'applicant');
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
