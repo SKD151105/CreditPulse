@@ -151,7 +151,7 @@ export const Footer = () => {
               </a>
               {/* Added a placeholder for other potential socials just in case */}
             </div>
-            <div className="pt-4">
+            <div>
               <h4 className="text-lg font-bold text-white mb-4">Documentation</h4>
               <a 
                 href="https://github.com/SKD151105/CreditPulse" 
