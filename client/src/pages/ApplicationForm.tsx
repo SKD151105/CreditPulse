@@ -473,7 +473,7 @@ export default function ApplicationForm() {
               <h2 className="text-xl font-semibold text-white">Supporting Documents</h2>
             </div>
             
-            <div className="bg-gray-800/30 border border-gray-500 border-dashed rounded-xl p-8 text-center transition-all hover:bg-white/5">
+            <div className={`bg-gray-800/30 border border-gray-500 border-dashed rounded-xl p-8 text-center transition-all ${fileUrls && fileUrls.length > 0 ? '' : 'hover:bg-white/5 cursor-pointer group'}`} onClick={() => { if (!fileUrls || fileUrls.length === 0) fileInputRef.current?.click(); }}>
               {uploadingFile ? (
                 <div className="flex flex-col items-center justify-center">
                    <Loader2 className="h-8 w-8 text-indigo-500 animate-spin mb-4" />
@@ -486,7 +486,7 @@ export default function ApplicationForm() {
               ) : (
                 <div className="flex flex-col w-full">
                   {fileUrls && fileUrls.length > 0 && (
-                    <div className="w-full mb-6">
+                    <div className="w-full mb-6 cursor-default" onClick={(e) => e.stopPropagation()}>
                       <p className="text-left font-medium text-emerald-400 mb-4">Uploaded Documents ({fileUrls.length})</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {fileUrls.map((url, idx) => {
@@ -511,8 +511,16 @@ export default function ApplicationForm() {
                     </div>
                   )}
                   
-                  <div className="flex flex-col items-center justify-center border-t border-dashed border-gray-500 pt-6 mt-2">
-                     <div className="h-16 w-16 bg-gray-800 text-gray-300 rounded-full flex items-center justify-center mb-4 cursor-pointer hover:text-white hover:bg-gray-700 transition-all" onClick={() => fileInputRef.current?.click()}>
+                  <div 
+                    className={`flex flex-col items-center justify-center ${fileUrls && fileUrls.length > 0 ? 'border-t border-dashed border-gray-500 pt-6 mt-2 cursor-pointer group hover:bg-white/5 rounded-b-xl -mx-8 -mb-8 pb-8' : ''}`} 
+                    onClick={(e) => {
+                      if (fileUrls && fileUrls.length > 0) {
+                        e.stopPropagation();
+                        fileInputRef.current?.click();
+                      }
+                    }}
+                  >
+                     <div className={`h-16 w-16 bg-gray-800 text-gray-300 rounded-full flex items-center justify-center mb-4 transition-all ${fileUrls && fileUrls.length > 0 ? 'group-hover:text-white group-hover:bg-gray-700' : 'group-hover:text-white group-hover:bg-gray-700'}`}>
                        <Upload className="h-8 w-8" />
                      </div>
                      <p className="text-white font-medium mb-1">Click to upload more documents</p>
