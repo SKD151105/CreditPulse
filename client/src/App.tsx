@@ -8,7 +8,7 @@ import { Footer } from './components/Footer';
 import { Landing } from './pages/Landing';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
-import { AdminLogin } from './pages/AdminLogin';
+
 import { Unauthorized } from './pages/Unauthorized';
 import './App.css';
 
@@ -43,7 +43,7 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
+
                 <Route path="/register" element={<Register />} />
                 <Route path="/unauthorized" element={<Unauthorized />} />
                 <Route path="/help" element={<HelpCenter />} />
