@@ -20,7 +20,7 @@ const prettyFormat = winston.format.combine(
 );
 
 const logger = winston.createLogger({
-  level: isProduction ? 'warn' : 'debug',
+  level: 'info', // Always log info+ so worker/job activity is visible in docker logs
   transports: [
     new winston.transports.Console({
       format: isProduction ? jsonFormat : prettyFormat,
