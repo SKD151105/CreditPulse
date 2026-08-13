@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Phone, ExternalLink, ChevronRight, Zap, ChevronUp, Check } from 'lucide-react';
+import { Mail, Phone, ExternalLink, ChevronRight, Zap, ChevronUp, Check, Github } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -150,6 +150,19 @@ export const Footer = () => {
                 <ExternalLink className="w-5 h-5" />
               </a>
               {/* Added a placeholder for other potential socials just in case */}
+            </div>
+            <div className="pt-4">
+              <h4 className="text-lg font-bold text-white mb-4">Documentation</h4>
+              <a 
+                href="https://github.com/SKD151105/CreditPulse" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 p-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 text-gray-400 hover:text-white transition-all transform hover:-translate-y-1"
+                aria-label="GitHub Repository"
+              >
+                <Github className="w-5 h-5" />
+                <span className="text-sm font-medium">GitHub Repo</span>
+              </a>
             </div>
           </div>
         </div>
