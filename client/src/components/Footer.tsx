@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Mail, Phone, ExternalLink, ChevronRight, Zap, ChevronUp, Check, Code2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export const Footer = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -15,8 +15,10 @@ export const Footer = () => {
     const willExpand = !isExpanded;
     setIsExpanded(willExpand);
     
-    if (willExpand || !willExpand) {
-      // Keep scrolling to the bottom as the footer expands/collapses (animation is 300ms)
+    if (willExpand) {
+      // Keep the bottom content in view while the footer expands.
+      // On collapse, forcing scroll creates a jumpy fight with the browser's
+      // natural scroll position adjustment.
       const startTime = Date.now();
       const scrollInterval = setInterval(() => {
         window.scrollTo(0, document.body.scrollHeight);
@@ -36,16 +38,18 @@ export const Footer = () => {
   return (
     <footer className="bg-black/20 border-t border-white/10 mt-auto backdrop-blur-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <AnimatePresence initial={false}>
-          {showFullFooter && (
-            <motion.div
-              initial={isDashboard ? { height: 0, opacity: 0 } : false}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-              <div className="pt-16 pb-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
+        <motion.div
+          initial={false}
+          animate={
+            isDashboard
+              ? { height: isExpanded ? 'auto' : 0, opacity: isExpanded ? 1 : 0 }
+              : { height: 'auto', opacity: 1 }
+          }
+          transition={{ duration: 0.3 }}
+          className="overflow-hidden"
+          aria-hidden={isDashboard && !isExpanded}
+        >
+          <div className="pt-16 pb-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           {/* About Us */}
           <div className="space-y-4 lg:pr-8">
             <div className="flex items-center gap-2 mb-4">
