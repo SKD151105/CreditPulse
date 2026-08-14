@@ -76,7 +76,10 @@ export class AdminService {
 
     await loan.save();
 
-    await CacheService.deleteByPattern(`loan:*`);
+    await Promise.all([
+      CacheService.deleteByPattern(`loan:*`),
+      CacheService.deleteByPattern(`loans:user:${loan.applicantId}:*`)
+    ]);
 
     // Create a separate audit log for the under_review status change
     // so the Activity Timeline shows it as its own step
@@ -127,7 +130,10 @@ export class AdminService {
 
     await loan.save();
 
-    await CacheService.deleteByPattern(`loan:*`);
+    await Promise.all([
+      CacheService.deleteByPattern(`loan:*`),
+      CacheService.deleteByPattern(`loans:user:${loan.applicantId}:*`)
+    ]);
 
     await NotificationService.sendNotification(
       loan.applicantId.toString(),

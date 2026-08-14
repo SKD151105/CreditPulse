@@ -220,6 +220,32 @@ docker logs --tail 100 ubuntu-worker-1
 
 ---
 
+## Webhooks Configuration & Testing
+
+CreditPulse supports outbound Webhooks to notify your external CRMs or systems when a loan application changes status. Webhooks are dispatched asynchronously by the background worker.
+
+### How it works
+1. An admin registers a webhook URL in the Admin Dashboard and selects which events they want to listen to (e.g., `loan.submitted`, `loan.approved`, `loan.rejected`).
+2. When the event occurs, the BullMQ background worker picks up the job.
+3. The worker sends a `POST` request to the registered URL containing the event data as JSON.
+4. The request includes an `x-creditpulse-signature` header, which is an HMAC SHA-256 hash of the payload using your `WEBHOOK_SECRET`. Your external system can use this to verify the payload is genuinely from CreditPulse.
+
+### How to test webhooks
+The easiest way to test if your webhooks are working in production is by using a free inspection tool.
+
+1. Go to [webhook.site](https://webhook.site/).
+2. Copy the unique URL they provide you (e.g., `https://webhook.site/your-unique-uuid`).
+3. Log into your CreditPulse **Admin Dashboard**.
+4. Navigate to the **Webhooks** section (or use the API directly).
+5. Add a new webhook:
+   - **URL**: Paste your `webhook.site` URL.
+   - **Events**: Select `loan.approved` (or `loan.submitted`).
+6. Go perform the action (e.g., approve a loan).
+7. Look at your `webhook.site` browser tab. You will instantly see the incoming HTTP POST request containing the JSON payload of the loan approval and the signature header!
+8. If you have your EC2 logs open (`docker compose logs -f worker`), you will also see the worker log: `"Processing webhook job..."` followed by `"Successfully dispatched webhook..."`.
+
+---
+
 ## Deployment
 
 Continuous Integration and Deployment are managed via GitHub Actions (`.github/workflows/deploy.yml`).
