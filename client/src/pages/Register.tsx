@@ -57,8 +57,8 @@ export const Register = () => {
         email: data.email,
         password: data.password
       });
-      const { accessToken, user } = response.data.data;
-      login(accessToken, user);
+      const { accessToken, refreshToken, user } = response.data.data;
+      login(accessToken, user, refreshToken);
       navigate(user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -73,8 +73,8 @@ export const Register = () => {
     setError('');
     try {
       const response = await axiosInstance.post('/auth/login', credentials);
-      const { accessToken, user } = response.data.data;
-      login(accessToken, user);
+      const { accessToken, refreshToken, user } = response.data.data;
+      login(accessToken, user, refreshToken);
       navigate(user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -92,8 +92,8 @@ export const Register = () => {
       const response = await axiosInstance.post('/auth/google', {
         credential: credentialResponse.credential,
       });
-      const { accessToken, user: userData } = response.data.data;
-      login(accessToken, userData);
+      const { accessToken, refreshToken, user: userData } = response.data.data;
+      login(accessToken, userData, refreshToken);
       navigate(userData.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
       console.error("Google Registration Error:", err);

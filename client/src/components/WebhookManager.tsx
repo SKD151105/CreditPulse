@@ -25,7 +25,7 @@ export function WebhookManager() {
 
   const fetchWebhooks = useCallback(async () => {
     try {
-      const response = await axiosInstance.get('/webhooks');
+      const response = await axiosInstance.get('/admin/webhooks');
       setWebhooks(response.data.data);
     } catch (error) {
       console.error('Failed to fetch webhooks', error);
@@ -43,7 +43,7 @@ export function WebhookManager() {
 
   const handleToggle = async (id: string) => {
     try {
-      await axiosInstance.patch(`/webhooks/${id}/toggle`);
+      await axiosInstance.patch(`/admin/webhooks/${id}/toggle`);
       fetchWebhooks();
     } catch (error) {
       console.error('Failed to toggle webhook', error);
@@ -55,7 +55,7 @@ export function WebhookManager() {
     if (!newUrl || selectedEvents.length === 0) return;
 
     try {
-      await axiosInstance.post('/webhooks', {
+      await axiosInstance.post('/admin/webhooks', {
         url: newUrl,
         events: selectedEvents
       });

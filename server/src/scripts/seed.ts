@@ -139,7 +139,14 @@ const seedDatabase = async () => {
         ...base,
         ...data,
         statusHistory,
-        fileUrls: ['https://creditpulse-demo-bucket.s3.ap-south-1.amazonaws.com/demo-document.pdf']
+        documents: [{
+          type: 'other',
+          s3Key: 'demo/demo-document.pdf',
+          originalName: 'demo-document.pdf',
+          mimeType: 'application/pdf',
+          size: 102400,
+          uploadedAt: createdAt
+        }]
       };
     };
 
