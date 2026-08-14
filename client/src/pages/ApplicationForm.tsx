@@ -36,6 +36,7 @@ const applicationSchema = z.object({
 });
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
+type UploadedDocument = NonNullable<ApplicationFormValues['documents']>[number];
 
 export default function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -146,7 +147,7 @@ export default function ApplicationForm() {
     setError('');
 
     try {
-      const newDocuments: any[] = [];
+      const newDocuments: UploadedDocument[] = [];
       const totalFiles = files.length;
       let completedFiles = 0;
 

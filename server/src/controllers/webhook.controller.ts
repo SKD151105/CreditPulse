@@ -23,9 +23,9 @@ export class WebhookController {
     }
   }
 
-  static async list(_req: Request, res: Response, next: NextFunction) {
+  static async list(req: Request, res: Response, next: NextFunction) {
     try {
-      const webhooks = await Webhook.find().sort({ createdAt: -1 });
+      const webhooks = await Webhook.find({ userId: req.user!._id }).sort({ createdAt: -1 });
       res.status(200).json({ success: true, data: webhooks });
     } catch (error) {
       next(error);
@@ -36,7 +36,7 @@ export class WebhookController {
     try {
       const webhookId = req.params.id;
       
-      const webhook = await Webhook.findById(webhookId);
+      const webhook = await Webhook.findOne({ _id: webhookId, userId: req.user!._id });
       if (!webhook) {
         return res.status(404).json({ success: false, message: 'Webhook not found' });
       }

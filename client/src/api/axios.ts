@@ -45,10 +45,13 @@ axiosInstance.interceptors.response.use(
           refreshToken,
         });
 
-        const newAccessToken = response.data.data.accessToken;
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
 
-        // Save new token
+        // Save rotated tokens from the refresh response
         localStorage.setItem('accessToken', newAccessToken);
+        if (newRefreshToken) {
+          localStorage.setItem('refreshToken', newRefreshToken);
+        }
 
         // Update authorization header
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

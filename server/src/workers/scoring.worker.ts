@@ -36,9 +36,9 @@ export const scoringWorker = new Worker(
     } catch (error) {
       logger.error(`Error processing loan ${loanId}: ${error}`);
       
-      const failedLoan = await LoanApplication.findByIdAndUpdate(loanId, { 
-        status: 'under_review' 
-      }, { new: true });
+      // Keep the loan in "submitted" so an admin can still claim it manually.
+      // Moving it to "under_review" without an assignee leaves it stranded.
+      const failedLoan = await LoanApplication.findById(loanId);
 
       if (failedLoan) {
         await NotificationService.sendNotification(
