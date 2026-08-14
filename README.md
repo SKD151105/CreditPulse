@@ -167,7 +167,6 @@ npm run seed
 | `RESEND_API_KEY`        | Resend API Key                                     |
 | `CLIENT_URL`            | Allowed CORS origin                                |
 | `SUPER_ADMIN_SECRET`    | Passphrase for Admin promotion                     |
-| `WEBHOOK_SECRET`        | Secret used to sign HMAC webhook payloads          |
 
 ### Client Environment (`client/.env`)
 
@@ -228,7 +227,7 @@ CreditPulse supports outbound Webhooks to notify your external CRMs or systems w
 1. An admin registers a webhook URL in the Admin Dashboard and selects which events they want to listen to (e.g., `loan.submitted`, `loan.approved`, `loan.rejected`).
 2. When the event occurs, the BullMQ background worker picks up the job.
 3. The worker sends a `POST` request to the registered URL containing the event data as JSON.
-4. The request includes an `x-creditpulse-signature` header, which is an HMAC SHA-256 hash of the payload using your `WEBHOOK_SECRET`. Your external system can use this to verify the payload is genuinely from CreditPulse.
+4. The request includes an `x-creditpulse-signature` header, which is an HMAC SHA-256 hash of the payload using the unique secret generated for that webhook. The secret is shown in the Admin Dashboard after registration, and your external system can use it to verify the payload is genuinely from CreditPulse.
 
 ### How to test webhooks
 The easiest way to test if your webhooks are working in production is by using a free inspection tool.
@@ -283,8 +282,9 @@ Continuous Integration and Deployment are managed via GitHub Actions (`.github/w
 | `GET`   | `/api/admin/loans/:id/audit-logs` | Retrieve application audit trail | Yes (Admin) |
 | `PATCH` | `/api/admin/loans/:id/assign`     | Assign application               | Yes (Admin) |
 | `PATCH` | `/api/admin/loans/:id/status`     | Update application status        | Yes (Admin) |
-| `GET`   | `/api/webhooks`                   | List webhook configurations      | Yes (Admin) |
-| `POST`  | `/api/webhooks`                   | Register webhook endpoint        | Yes (Admin) |
+| `GET`   | `/api/admin/webhooks`            | List webhook configurations      | Yes (Admin) |
+| `POST`  | `/api/admin/webhooks`            | Register webhook endpoint        | Yes (Admin) |
+| `PATCH` | `/api/admin/webhooks/:id/toggle` | Enable or disable a webhook      | Yes (Admin) |
 
 ---
 
