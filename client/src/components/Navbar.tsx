@@ -7,6 +7,17 @@ export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isDashboard = location.pathname === '/admin' || location.pathname === '/dashboard';
+
+  const shouldBlockNavigation = () =>
+    (window as Window & { __checkApplicationDirty?: () => boolean }).__checkApplicationDirty?.() ?? false;
+
+  const handleDirtyNavigation = (e: React.MouseEvent) => {
+    if (shouldBlockNavigation()) {
+      e.preventDefault();
+      window.dispatchEvent(new CustomEvent('requestExitModal'));
+    }
+  };
+
   return (
     <nav className="fixed w-full z-50 backdrop-blur-md bg-gray-900/80 border-b border-white/10 shadow-sm shadow-black/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,12 +25,7 @@ export const Navbar = () => {
           <Link 
             to="/" 
             className="flex items-center space-x-1 sm:space-x-2"
-            onClick={(e) => {
-              if ((window as Window & { __checkApplicationDirty?: () => boolean }).__checkApplicationDirty?.()) {
-                e.preventDefault();
-                window.dispatchEvent(new CustomEvent('requestExitModal'));
-              }
-            }}
+            onClick={handleDirtyNavigation}
           >
             <Zap className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-500" />
             <span className="max-[410px]:hidden text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
@@ -45,7 +51,7 @@ export const Navbar = () => {
               </>
             ) : (
               <div className="flex items-center space-x-6">
-                <Link to="/profile" className="flex items-center space-x-2 group">
+                <Link to="/profile" onClick={handleDirtyNavigation} className="flex items-center space-x-2 group">
                   <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden ring-2 ring-transparent group-hover:ring-indigo-400 transition-all">
                     {user.avatar ? (
                       <img src={user.avatar} alt="Profile" className="h-full w-full object-cover" />
@@ -61,12 +67,7 @@ export const Navbar = () => {
                 {!isDashboard && (
                   <Link
                     to={user.role === 'admin' ? '/admin' : '/dashboard'}
-                    onClick={(e) => {
-                      if ((window as Window & { __checkApplicationDirty?: () => boolean }).__checkApplicationDirty?.()) {
-                        e.preventDefault();
-                        window.dispatchEvent(new CustomEvent('requestExitModal'));
-                      }
-                    }}
+                    onClick={handleDirtyNavigation}
                     className="text-gray-300 hover:text-white text-sm font-medium transition-colors"
                   >
                     Dashboard
@@ -74,7 +75,12 @@ export const Navbar = () => {
                 )}
 
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    if (shouldBlockNavigation()) {
+                      e.preventDefault();
+                      window.dispatchEvent(new CustomEvent('requestExitModal'));
+                      return;
+                    }
                     logout();
                     navigate('/login');
                   }}
