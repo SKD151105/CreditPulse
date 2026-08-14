@@ -169,10 +169,8 @@ export const Footer = () => {
               </a>
             </div>
           </div>
-        </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          </div>
+        </motion.div>
 
         {/* Bottom Bar */}
         <div 
