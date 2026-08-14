@@ -95,6 +95,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0 });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const remarksRef = useRef<HTMLTextAreaElement>(null);
   const [viewingDocId, setViewingDocId] = useState<string | null>(null);
 
   const handleViewDocument = async (loanId: string, docId: string) => {
@@ -189,6 +190,8 @@ export default function AdminDashboard() {
   const handleDecision = async (loanId: string, decision: 'approved' | 'rejected') => {
     if (!remarks) {
       setActionError('Please provide remarks for your decision.');
+      remarksRef.current?.focus();
+      remarksRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     
@@ -493,13 +496,6 @@ export default function AdminDashboard() {
 
               <h2 className="text-2xl font-bold mb-6 pr-10">Application Review</h2>
 
-              {actionError && (
-                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-center text-red-400">
-                  <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-                  {actionError}
-                </div>
-              )}
-
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
                 <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
                   <p className="text-xs text-gray-400 mb-1">Applicant Name</p>
@@ -608,12 +604,19 @@ export default function AdminDashboard() {
                   <div className="mb-8">
                     <label className="block text-sm font-medium text-gray-300 mb-2">Underwriter Remarks</label>
                     <textarea 
+                      ref={remarksRef}
                       value={remarks}
                       onChange={(e) => setRemarks(e.target.value)}
                       placeholder="Enter reason for approval or rejection..."
                       rows={4}
                       className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
                     />
+                    {actionError && (
+                      <div className="mt-3 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-start text-red-400 text-sm">
+                        <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+                        <span>{actionError}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4">
