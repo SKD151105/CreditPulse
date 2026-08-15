@@ -245,6 +245,25 @@ The easiest way to test if your webhooks are working in production is by using a
 
 ---
 
+## Enterprise Kubernetes Architecture
+
+While this project is actively deployed via **Docker Compose on a single AWS EC2 instance** to maximize cost-efficiency and simplify continuous delivery for the live demo, CreditPulse is fundamentally designed for massive horizontal scalability.
+
+Full, production-grade **Kubernetes (K8s)** manifests are provided in the `/k8s` directory for enterprise deployments. These manifests include:
+
+- **Horizontal Pod Autoscaling (HPA):** The `api-server` deployment is configured with an HPA to automatically scale pods up to 10 replicas when average CPU utilization exceeds 75%.
+- **Background Worker Separation:** The BullMQ worker is deployed independently from the API, allowing asynchronous task processing (emails, scoring, webhooks) to scale completely independently of HTTP traffic.
+- **Internal Cluster Networking:** Secure `ClusterIP` routing between the API, workers, and Redis, ensuring the message broker is never exposed to the public internet.
+- **ConfigMaps & Secrets:** Clear separation of configuration and sensitive credentials following 12-Factor App principles.
+
+To test the Kubernetes architecture locally using Minikube or Docker Desktop:
+```bash
+# Apply all manifests in the k8s directory
+kubectl apply -f k8s/
+```
+
+---
+
 ## Deployment
 
 Continuous Integration and Deployment are managed via GitHub Actions (`.github/workflows/deploy.yml`).

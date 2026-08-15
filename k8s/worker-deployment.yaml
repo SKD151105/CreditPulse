@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: background-worker
+  labels:
+    app: background-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: background-worker
+  template:
+    metadata:
+      labels:
+        app: background-worker
+    spec:
+      containers:
+      - name: background-worker
+        image: ghcr.io/skd151105/creditpulse-server:latest
+        imagePullPolicy: Always
+        command: ["node", "dist/worker.js"]
+        envFrom:
+        - configMapRef:
+            name: creditpulse-config
+        - secretRef:
+            name: creditpulse-secrets
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
