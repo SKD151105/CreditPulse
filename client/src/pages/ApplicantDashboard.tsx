@@ -108,7 +108,11 @@ export default function ApplicantDashboard() {
   const refetchLoans = useCallback(async (currentPage: number) => {
     try {
       const response = await axiosInstance.get(`/loans?page=${currentPage}&limit=6`);
-      setLoans(response.data.data.loans);
+      const normalizedLoans = response.data.data.loans.map((loan: Loan) => ({
+        ...loan,
+        scoringStatus: typeof loan.creditScore === 'number' ? 'completed' : (loan.scoringError ? 'failed' : loan.scoringStatus)
+      }));
+      setLoans(normalizedLoans);
       setTotalPages(response.data.data.pagination.pages || 1);
     } catch (error) {
       console.error('Failed to fetch loans:', error);
@@ -126,7 +130,11 @@ export default function ApplicantDashboard() {
       axiosInstance.get(`/loans?page=${page}&limit=6`)
         .then(response => {
           if (isMounted) {
-            setLoans(response.data.data.loans);
+            const normalizedLoans = response.data.data.loans.map((loan: Loan) => ({
+              ...loan,
+              scoringStatus: typeof loan.creditScore === 'number' ? 'completed' : (loan.scoringError ? 'failed' : loan.scoringStatus)
+            }));
+            setLoans(normalizedLoans);
             setTotalPages(response.data.data.pagination.pages || 1);
           }
         })

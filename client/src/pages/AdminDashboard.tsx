@@ -149,7 +149,11 @@ export default function AdminDashboard() {
         url += `&status=${currentStatusFilter}`;
       }
       const response = await axiosInstance.get(url);
-      setLoans(response.data.data.loans);
+      const normalizedLoans = response.data.data.loans.map((loan: Loan) => ({
+        ...loan,
+        scoringStatus: typeof loan.creditScore === 'number' ? 'completed' : (loan.scoringError ? 'failed' : loan.scoringStatus)
+      }));
+      setLoans(normalizedLoans);
       setTotalPages(response.data.data.pagination.pages || 1);
       if (response.data.data.stats) {
         setStats(response.data.data.stats);
@@ -175,7 +179,11 @@ export default function AdminDashboard() {
       axiosInstance.get(url)
         .then(response => {
           if (isMounted) {
-            setLoans(response.data.data.loans);
+            const normalizedLoans = response.data.data.loans.map((loan: Loan) => ({
+              ...loan,
+              scoringStatus: typeof loan.creditScore === 'number' ? 'completed' : (loan.scoringError ? 'failed' : loan.scoringStatus)
+            }));
+            setLoans(normalizedLoans);
             setTotalPages(response.data.data.pagination.pages || 1);
             if (response.data.data.stats) {
               setStats(response.data.data.stats);
