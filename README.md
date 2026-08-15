@@ -307,6 +307,27 @@ Continuous Integration and Deployment are managed via GitHub Actions (`.github/w
 
 ---
 
+## Future Scope (AI Integration)
+
+CreditPulse is designed with asynchronous task queues (BullMQ), making it the perfect foundation for heavy Artificial Intelligence and Machine Learning operations without blocking the main event loop.
+
+Planned enhancements include:
+
+1. **AI Document Verification (OCR & LLM)**
+   - Automatically parse uploaded income proofs (PDFs) using LangChain's Document Loaders.
+   - Pass the extracted text to an LLM (e.g., Gemini or HuggingFace API) to verify if the salary on the document matches the user's claimed `monthlyIncome`.
+   - Flag mismatches for manual administrative review.
+
+2. **"AI Risk Underwriter" Agent**
+   - Provide the complete applicant profile (Age, Income, Loan Purpose, Tenure, Loan Amount) as context to an LLM.
+   - Generate a human-readable "Risk Analysis Summary" paragraph on the Admin Dashboard to augment the numerical credit score (e.g., *"Applicant has strong income, but 'Venture Setup' for 60 months presents moderate risk."*).
+
+3. **Smart Purpose Categorization**
+   - Utilize a lightweight HuggingFace classification model to parse the free-text `purpose` field.
+   - Automatically tag applications with standardized industry categories (e.g., `[Medical]`, `[Education]`, `[Electronics]`) to enable advanced filtering and analytics for underwriters.
+
+---
+
 ## License
 
 MIT License
