@@ -8,5 +8,6 @@ router.use(authenticate, authorizeRoles('admin'));
 router.post('/', WebhookController.register);
 router.get('/', WebhookController.list);
 router.patch('/:id/toggle', WebhookController.toggleStatus);
+router.delete('/:id', WebhookController.remove);
 
 export default router;

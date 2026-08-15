@@ -49,4 +49,19 @@ export class WebhookController {
       next(error);
     }
   }
+
+  static async remove(req: Request, res: Response, next: NextFunction) {
+    try {
+      const webhookId = req.params.id;
+
+      const webhook = await Webhook.findOneAndDelete({ _id: webhookId, userId: req.user!._id });
+      if (!webhook) {
+        return res.status(404).json({ success: false, message: 'Webhook not found' });
+      }
+
+      res.status(200).json({ success: true, data: {} });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

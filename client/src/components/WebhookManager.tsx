@@ -20,6 +20,7 @@ export function WebhookManager() {
   const [newUrl, setNewUrl] = useState('');
   const [selectedEvents, setSelectedEvents] = useState<string[]>(['loan.approved']);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const availableEvents = ['loan.submitted', 'loan.approved', 'loan.rejected', 'loan.disbursed'];
 
@@ -47,6 +48,22 @@ export function WebhookManager() {
       fetchWebhooks();
     } catch (error) {
       console.error('Failed to toggle webhook', error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm('Delete this webhook permanently? This cannot be undone.');
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(id);
+      await axiosInstance.delete(`/admin/webhooks/${id}`);
+      fetchWebhooks();
+    } catch (error) {
+      console.error('Failed to delete webhook', error);
+      alert('Failed to delete webhook. Please try again.');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -215,7 +232,7 @@ export function WebhookManager() {
                   </div>
                 </div>
 
-                <div className="flex flex-row md:flex-col justify-between items-center md:items-end min-w-[140px] pt-4 md:pt-0 mt-4 md:mt-0 border-t md:border-t-0 md:border-l border-white/10 md:pl-4 gap-4 md:gap-0">
+                <div className="flex flex-row md:flex-col justify-between items-center md:items-end min-w-[170px] pt-4 md:pt-0 mt-4 md:mt-0 border-t md:border-t-0 md:border-l border-white/10 md:pl-4 gap-4 md:gap-0">
                   <button
                     onClick={() => handleToggle(wh._id)}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors w-full ${
@@ -225,6 +242,14 @@ export function WebhookManager() {
                     }`}
                   >
                     {wh.isActive ? 'Disable' : 'Enable'}
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(wh._id)}
+                    disabled={deletingId === wh._id}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors w-full mt-0 md:mt-3 bg-white/5 hover:bg-red-500/10 text-gray-300 hover:text-red-400 border border-white/10 hover:border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {deletingId === wh._id ? 'Deleting...' : 'Delete'}
                   </button>
                   
                   <div className="text-right text-xs md:mt-4">
