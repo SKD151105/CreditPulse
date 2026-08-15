@@ -63,6 +63,8 @@ export interface ILoanApplication extends Document {
   documents: IDocumentSubdoc[];
   creditScore?: number;
   riskCategory?: 'low' | 'medium' | 'high' | 'very_high';
+  scoringStatus: 'not_started' | 'pending' | 'completed' | 'failed';
+  scoringError?: string;
   scoringBreakdown?: IScoringBreakdown;
   scoredAt?: Date;
   emiDetails?: IEmiDetails;
@@ -193,6 +195,13 @@ const loanApplicationSchema = new Schema<ILoanApplication>(
       type: String,
       enum: ['low', 'medium', 'high', 'very_high'],
     },
+    scoringStatus: {
+      type: String,
+      enum: ['not_started', 'pending', 'completed', 'failed'],
+      default: 'not_started',
+      required: true,
+    },
+    scoringError: { type: String },
     scoringBreakdown: { type: scoringBreakdownSchema },
     scoredAt: { type: Date },
     emiDetails: { type: emiDetailsSchema },

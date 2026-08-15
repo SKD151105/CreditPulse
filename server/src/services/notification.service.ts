@@ -53,7 +53,7 @@ export class NotificationService {
     }
   }
 
-  static async sendNotification(userId: string, type: 'status_change' | 'score_ready' | 'assignment' | 'system', title: string, message: string, data?: any) {
+  static async sendNotification(userId: string, type: 'status_change' | 'score_ready' | 'score_failed' | 'assignment' | 'system', title: string, message: string, data?: any) {
     // 1. Save to MongoDB
     const notification = await Notification.create({
       userId,

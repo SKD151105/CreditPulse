@@ -3,18 +3,48 @@ import { createRedisConnection } from '../config/redis';
 import { ScoringService } from '../services/scoring.service';
 import { NotificationService } from '../services/notification.service';
 import { WebhookService } from '../services/webhook.service';
+import { CacheService } from '../services/cache.service';
 import logger from '../utils/logger';
 import LoanApplication from '../models/LoanApplication';
 
 export const scoringWorker = new Worker(
   'scoring-queue',
   async (job: Job) => {
-    const { loanId } = job.data;
-    logger.info(`Processing scoring job ${job.id} for loan ${loanId}`);
+    const { loanId, forceRetry = false } = job.data;
+    logger.info(`Processing scoring job ${job.id} for loan ${loanId} (forceRetry=${forceRetry})`);
     
     try {
+      const existingLoan = await LoanApplication.findById(loanId);
+
+      if (!existingLoan) {
+        throw new Error(`Loan ${loanId} not found`);
+      }
+
+      if (
+        existingLoan.scoringStatus === 'completed' &&
+        typeof existingLoan.creditScore === 'number' &&
+        existingLoan.scoredAt &&
+        !forceRetry
+      ) {
+        logger.info(`Skipping scoring for loan ${loanId}; score already completed`);
+        return existingLoan;
+      }
+
+      if (
+        existingLoan.scoringStatus === 'pending' &&
+        !forceRetry
+      ) {
+        logger.info(`Skipping scoring for loan ${loanId}; score job already in flight`);
+        return existingLoan;
+      }
+
       // Run the scoring engine
       const loan = await ScoringService.calculateScore(loanId);
+
+      await Promise.all([
+        CacheService.del(`loan:${loanId}`),
+        CacheService.deleteByPattern(`loans:user:${loan.applicantId}:*`)
+      ]);
       
       logger.info(`Successfully scored loan ${loanId}. Score: ${loan.creditScore}`);
       
@@ -41,11 +71,24 @@ export const scoringWorker = new Worker(
       const failedLoan = await LoanApplication.findById(loanId);
 
       if (failedLoan) {
+        failedLoan.scoringStatus = 'failed';
+        failedLoan.scoringError = error instanceof Error ? error.message : 'Scoring failed unexpectedly';
+        failedLoan.creditScore = undefined;
+        failedLoan.riskCategory = undefined;
+        failedLoan.scoringBreakdown = undefined;
+        failedLoan.scoredAt = undefined;
+        await failedLoan.save();
+
+        await Promise.all([
+          CacheService.del(`loan:${loanId}`),
+          CacheService.deleteByPattern(`loans:user:${failedLoan.applicantId}:*`)
+        ]);
+
         await NotificationService.sendNotification(
           failedLoan.applicantId.toString(),
-          'system',
-          'Application Needs Review',
-          'Your loan application requires manual review.',
+          'score_failed',
+          'Scoring Delayed',
+          'Your loan application could not be scored automatically and is awaiting review.',
           { loanId }
         );
       }

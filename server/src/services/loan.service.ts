@@ -119,6 +119,12 @@ export class LoanService {
     }
 
     loan.status = 'submitted';
+    loan.scoringStatus = 'pending';
+    loan.scoringError = undefined;
+    loan.creditScore = undefined;
+    loan.riskCategory = undefined;
+    loan.scoringBreakdown = undefined;
+    loan.scoredAt = undefined;
     loan.statusHistory.push({
       from: 'draft',
       to: 'submitted',
@@ -128,7 +134,11 @@ export class LoanService {
 
     await loan.save();
 
-    await scoringQueue.add('score-loan', { loanId });
+    await scoringQueue.add(
+      'score-loan',
+      { loanId },
+      { jobId: `score-loan:${loanId}` }
+    );
     
     // Dispatch Email Notification via BullMQ
     const user = await User.findById(userId).select('email name').lean();

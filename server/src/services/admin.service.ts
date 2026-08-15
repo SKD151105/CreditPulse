@@ -7,6 +7,7 @@ import { emailQueue } from '../queues/email.queue';
 import User from '../models/User';
 import AuditLog from '../models/AuditLog';
 import logger from '../utils/logger';
+import { scoringQueue } from '../config/queue';
 
 export class AdminService {
   static async getAllLoans(adminEmail: string, page: number, limit: number, status?: string) {
@@ -162,6 +163,54 @@ export class AdminService {
     }
 
     logger.info(`Loan ${loanId} marked as ${status} by admin ${adminId}`);
+
+    return loan;
+  }
+
+  static async retryScoring(loanId: string, adminId: string) {
+    // Atomic update ensures that double-clicks/refresh storms won't enqueue multiple jobs
+    const loan = await LoanApplication.findOneAndUpdate(
+      { _id: loanId, scoringStatus: 'failed' },
+      {
+        $set: { scoringStatus: 'pending' },
+        $unset: {
+          scoringError: 1,
+          creditScore: 1,
+          riskCategory: 1,
+          scoringBreakdown: 1,
+          scoredAt: 1
+        }
+      },
+      { new: true }
+    );
+
+    if (!loan) {
+      // Fetch to give the correct contextual error
+      const existing = await LoanApplication.findById(loanId);
+      if (!existing) {
+        throw new NotFoundError('Loan application not found');
+      }
+      if (existing.status === 'draft') {
+        throw new BadRequestError('Draft applications cannot be scored');
+      }
+      if (existing.scoringStatus !== 'failed') {
+        throw new BadRequestError('Scoring can only be retried after a failed attempt');
+      }
+      throw new BadRequestError('Unable to retry scoring at this time');
+    }
+
+    await scoringQueue.add(
+      'score-loan',
+      { loanId, forceRetry: true },
+      { jobId: `score-loan:retry:${loanId}:${Date.now()}` }
+    );
+
+    await Promise.all([
+      CacheService.del(`loan:${loanId}`),
+      CacheService.deleteByPattern(`loans:user:${loan.applicantId}:*`)
+    ]);
+
+    logger.info(`Scoring retry queued for loan ${loanId} by admin ${adminId}`);
 
     return loan;
   }

@@ -10,7 +10,7 @@ export interface INotificationData {
 
 export interface INotification extends Document {
   userId: mongoose.Types.ObjectId;
-  type: 'status_change' | 'score_ready' | 'assignment' | 'system';
+  type: 'status_change' | 'score_ready' | 'score_failed' | 'assignment' | 'system';
   title: string;
   message: string;
   data?: INotificationData;
@@ -28,7 +28,7 @@ const notificationSchema = new Schema<INotification>(
     },
     type: {
       type: String,
-      enum: ['status_change', 'score_ready', 'assignment', 'system'],
+      enum: ['status_change', 'score_ready', 'score_failed', 'assignment', 'system'],
       required: true,
     },
     title: {

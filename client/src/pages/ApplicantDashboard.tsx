@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { Activity, CreditCard, Clock, Plus, CheckCircle, Trash2, X, Eye } from 'lucide-react';
+import { Activity, CreditCard, Clock, Plus, CheckCircle, Trash2, X, Eye, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -20,6 +20,9 @@ interface Loan {
   purpose: string;
   status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'disbursed';
   creditScore?: number;
+  scoringStatus?: 'not_started' | 'pending' | 'completed' | 'failed';
+  scoringError?: string;
+  scoredAt?: string;
   createdAt: string;
   tenure?: number;
   scoringBreakdown?: Record<string, { score: number; weight: number }>;
@@ -59,6 +62,15 @@ const getStatusText = (status: Loan['status']) => {
   switch (status) {
     case 'under_review': return 'Under Review';
     default: return status.charAt(0).toUpperCase() + status.slice(1);
+  }
+};
+
+const getScoringStatusText = (scoringStatus?: Loan['scoringStatus']) => {
+  switch (scoringStatus) {
+    case 'pending': return 'Scoring Pending';
+    case 'completed': return 'Score Ready';
+    case 'failed': return 'Scoring Delayed';
+    default: return 'Scoring Not Started';
   }
 };
 
@@ -284,18 +296,29 @@ export default function ApplicantDashboard() {
                 </div>
                 
                 <div className="mt-auto">
-                  {loan.creditScore ? (
+                  {loan.scoringStatus === 'completed' && typeof loan.creditScore === 'number' ? (
                     <div className="flex items-center justify-between p-4 bg-white/10 rounded-xl border border-white/10">
                       <div>
                         <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Credit Score</p>
                         <p className="text-2xl font-bold text-emerald-400">{loan.creditScore}</p>
+                        <p className="mt-1 text-xs text-emerald-300">{getScoringStatusText(loan.scoringStatus)}</p>
                       </div>
                       <CheckCircle className="h-8 w-8 text-emerald-500/50" />
+                    </div>
+                  ) : loan.scoringStatus === 'failed' ? (
+                    <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-100">
+                      <div className="flex items-start">
+                        <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0 text-red-300" />
+                        <div>
+                          <p className="font-medium text-red-200">Automated scoring is delayed.</p>
+                          <p className="mt-1 text-red-100/90">Your application can still be reviewed manually by the underwriting team.</p>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="flex items-center text-sm text-gray-300">
                       <Clock className="h-4 w-4 mr-2" />
-                      Pending Evaluation
+                      {loan.status === 'draft' ? 'Draft not submitted yet' : 'Automated scoring is in progress'}
                     </div>
                   )}
                   
@@ -424,6 +447,31 @@ export default function ApplicantDashboard() {
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {selectedLoan.scoringStatus && selectedLoan.scoringStatus !== 'not_started' && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-2">Scoring Status</h3>
+
+                  {selectedLoan.scoringStatus === 'completed' && typeof selectedLoan.creditScore === 'number' && (
+                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+                      <p className="text-xs uppercase tracking-wider text-emerald-300 mb-1">{getScoringStatusText(selectedLoan.scoringStatus)}</p>
+                      <p className="text-3xl font-bold text-emerald-300">{selectedLoan.creditScore}</p>
+                    </div>
+                  )}
+
+                  {selectedLoan.scoringStatus === 'pending' && (
+                    <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-100">
+                      Automated scoring is still running for this application. If the score is important for your next step, check back shortly.
+                    </div>
+                  )}
+
+                  {selectedLoan.scoringStatus === 'failed' && (
+                    <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-100">
+                      Automated scoring could not be completed right now. Your application can still move forward through manual review.
+                    </div>
+                  )}
                 </div>
               )}
             </motion.div>

@@ -147,6 +147,8 @@ export class ScoringService {
 
     loan.creditScore = finalScore;
     loan.riskCategory = riskCategory;
+    loan.scoringStatus = 'completed';
+    loan.scoringError = undefined;
     loan.scoringBreakdown = breakdown;
     loan.scoredAt = new Date();
 

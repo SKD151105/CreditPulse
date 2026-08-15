@@ -42,6 +42,18 @@ export class AdminController {
     }
   }
 
+  static async retryScoring(req: Request, res: Response, next: NextFunction) {
+    try {
+      const loanId = req.params.id as string;
+      const adminId = req.user!._id;
+
+      const result = await AdminService.retryScoring(loanId, adminId);
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async getLoanAuditLogs(req: Request, res: Response, next: NextFunction) {
     try {
       const logs = await AdminService.getLoanAuditLogs(req.params.id as string);

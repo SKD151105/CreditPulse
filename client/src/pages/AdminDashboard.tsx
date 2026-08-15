@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { CheckCircle, XCircle, UserPlus, Eye, X, Activity, AlertCircle, ChevronDown } from 'lucide-react';
+import { CheckCircle, XCircle, UserPlus, Eye, X, Activity, AlertCircle, ChevronDown, RotateCcw } from 'lucide-react';
 import axiosInstance from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -29,6 +29,9 @@ interface Loan {
   purpose: string;
   status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'disbursed';
   creditScore?: number;
+  scoringStatus?: 'not_started' | 'pending' | 'completed' | 'failed';
+  scoringError?: string;
+  scoredAt?: string;
   createdAt: string;
   assignedTo?: string;
   scoringBreakdown?: ScoringBreakdown;
@@ -79,6 +82,24 @@ const getStatusText = (status: Loan['status']) => {
   }
 };
 
+const getScoringStatusText = (scoringStatus?: Loan['scoringStatus']) => {
+  switch (scoringStatus) {
+    case 'pending': return 'Scoring Pending';
+    case 'completed': return 'Score Ready';
+    case 'failed': return 'Scoring Failed';
+    default: return 'Scoring Not Started';
+  }
+};
+
+const getScoringStatusColor = (scoringStatus?: Loan['scoringStatus']) => {
+  switch (scoringStatus) {
+    case 'pending': return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+    case 'completed': return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+    case 'failed': return 'bg-red-500/15 text-red-300 border-red-500/30';
+    default: return 'bg-white/10 text-gray-300 border-white/15';
+  }
+};
+
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -86,6 +107,7 @@ export default function AdminDashboard() {
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [remarks, setRemarks] = useState('');
   const [actionError, setActionError] = useState('');
+  const [scoringActionError, setScoringActionError] = useState('');
   const [processing, setProcessing] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -210,6 +232,24 @@ export default function AdminDashboard() {
         setActionError(err.response?.data?.message || 'Failed to process decision');
       } else {
         setActionError('An unexpected error occurred.');
+      }
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleRetryScoring = async (loanId: string) => {
+    try {
+      setProcessing(true);
+      setScoringActionError('');
+      const response = await axiosInstance.post(`/admin/loans/${loanId}/retry-scoring`);
+      setSelectedLoan((current) => current && current._id === loanId ? response.data.data : current);
+      await refetchLoans(page);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setScoringActionError(err.response?.data?.message || 'Failed to retry automated scoring');
+      } else {
+        setScoringActionError('Failed to retry automated scoring');
       }
     } finally {
       setProcessing(false);
@@ -391,10 +431,25 @@ export default function AdminDashboard() {
                   <div className="text-right">
                     <p className="text-xs text-gray-500 mb-1">Credit Score</p>
                     <p className={`text-2xl font-bold ${getScoreColor(loan.creditScore)}`}>
-                      {loan.creditScore || 'N/A'}
+                      {loan.scoringStatus === 'completed' && typeof loan.creditScore === 'number' ? loan.creditScore : '...'}
                     </p>
+                    <span className={`inline-flex mt-2 px-2.5 py-1 rounded-full text-[11px] font-medium border ${getScoringStatusColor(loan.scoringStatus)}`}>
+                      {getScoringStatusText(loan.scoringStatus)}
+                    </span>
                   </div>
                 </div>
+
+                {loan.scoringStatus === 'pending' && (
+                  <div className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                    Automated scoring is still running. You can wait for the score or continue with manual review.
+                  </div>
+                )}
+
+                {loan.scoringStatus === 'failed' && (
+                  <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                    Automated scoring failed for this application. Manual review is still available, and you can retry scoring after opening the case.
+                  </div>
+                )}
                 
                 <div className="mt-auto pt-4 border-t border-white/10">
                   {loan.status === 'submitted' && (
@@ -473,6 +528,7 @@ export default function AdminDashboard() {
               setSelectedLoan(null);
               setRemarks('');
               setActionError('');
+              setScoringActionError('');
             }}
           >
             <motion.div
@@ -488,6 +544,7 @@ export default function AdminDashboard() {
                   setSelectedLoan(null);
                   setRemarks('');
                   setActionError('');
+                  setScoringActionError('');
                 }}
                 className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"
               >
@@ -566,31 +623,82 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {selectedLoan.scoringBreakdown && (
+              {selectedLoan.scoringStatus && selectedLoan.scoringStatus !== 'not_started' && (
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-2">Risk Scoring Breakdown</h3>
-                  
-                  <div className="flex items-center justify-between mb-6 bg-white/10 p-4 rounded-xl border border-white/20">
-                    <span className="text-gray-300 font-medium">Final Credit Score</span>
-                    <span className={`text-3xl font-bold ${getScoreColor(selectedLoan.creditScore)}`}>
-                      {selectedLoan.creditScore}
-                      <span className="text-sm text-gray-400 font-normal ml-1">/ 100</span>
-                    </span>
+                  <h3 className="text-lg font-semibold mb-4 border-b border-white/10 pb-2">Automated Scoring</h3>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-5 bg-white/10 p-4 rounded-xl border border-white/20">
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Scoring State</p>
+                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold border ${getScoringStatusColor(selectedLoan.scoringStatus)}`}>
+                        {getScoringStatusText(selectedLoan.scoringStatus)}
+                      </span>
+                    </div>
+
+                    {selectedLoan.scoringStatus === 'completed' && typeof selectedLoan.creditScore === 'number' && (
+                      <div className="text-right">
+                        <p className="text-xs text-gray-400 mb-1">Final Credit Score</p>
+                        <span className={`text-3xl font-bold ${getScoreColor(selectedLoan.creditScore)}`}>
+                          {selectedLoan.creditScore}
+                          <span className="text-sm text-gray-400 font-normal ml-1">/ 100</span>
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="space-y-4">
-                    {Object.entries(selectedLoan.scoringBreakdown).map(([key, metric]) => {
-                      if (!metric) return null;
-                      return (
-                        <div key={key} className="flex justify-between items-center text-sm">
-                          <span className="text-gray-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                          <span className="font-mono text-white">
-                            {metric.score} <span className="text-gray-600">({metric.weight * 100}%)</span>
-                          </span>
+                  {selectedLoan.scoringStatus === 'pending' && (
+                    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+                      Automated scoring is still in progress. Please refresh shortly if you want the score, or continue with manual review if you already have enough context.
+                    </div>
+                  )}
+
+                  {selectedLoan.scoringStatus === 'failed' && (
+                    <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+                      <div className="flex items-start gap-3 text-sm text-red-100">
+                        <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-red-300" />
+                        <div className="flex-1">
+                          <p className="font-medium text-red-200">Automated scoring failed for this application.</p>
+                          <p className="mt-1 text-red-100/90">
+                            {selectedLoan.scoringError || 'The scoring worker could not finish. You can retry scoring or continue with manual review.'}
+                          </p>
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+
+                      {scoringActionError && (
+                        <div className="mt-3 rounded-lg border border-red-500/40 bg-red-950/40 px-3 py-2 text-sm text-red-200">
+                          {scoringActionError}
+                        </div>
+                      )}
+
+                      {['submitted', 'under_review'].includes(selectedLoan.status) && (
+                        <button
+                          type="button"
+                          onClick={() => handleRetryScoring(selectedLoan._id)}
+                          disabled={processing}
+                          className="mt-4 inline-flex items-center rounded-lg border border-red-400/40 bg-red-500/15 px-4 py-2 text-sm font-semibold text-red-100 transition-colors hover:bg-red-500/25 disabled:opacity-50"
+                        >
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                          Retry Scoring
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedLoan.scoringStatus === 'completed' && selectedLoan.scoringBreakdown && (
+                    <div className="space-y-4">
+                      {Object.entries(selectedLoan.scoringBreakdown).map(([key, metric]) => {
+                        if (!metric) return null;
+                        return (
+                          <div key={key} className="flex justify-between items-center text-sm">
+                            <span className="text-gray-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                            <span className="font-mono text-white">
+                              {metric.score} <span className="text-gray-600">({metric.weight * 100}%)</span>
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
